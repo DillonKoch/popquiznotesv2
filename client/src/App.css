@@ -1,4 +1,19 @@
+.header h1 {
+  left: 15%;
+  position: absolute;
+}
+
+.notes {
+  margin-left: 15%;
+  margin-top: 5%;
+  position: absolute;
+}
+
+.sidebarheader {
+  font-size: 40px;
+  color: rgb(51, 181, 179);
+}
+
 .sidebar {
-  width: 200px;
-  margin-left: 100px;
+  position: absolute;
 }

@@ -17,10 +17,10 @@
 import React from 'react';
 import "../App.css"
 
-function Header() {
+function Header(props) {
     return (
-        <div>
-            <img src="https://res.cloudinary.com/popquiznotes-com/image/upload/v1626837995/Site-Images/poquiznotes_ohic2p.png" alt="logo" />
+        <div className="header">
+            {/* <img src="https://res.cloudinary.com/popquiznotes-com/image/upload/v1626837995/Site-Images/poquiznotes_ohic2p.png" alt="logo" /> */}
             <h1>header</h1>
         </div>
     )

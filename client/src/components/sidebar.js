@@ -14,7 +14,7 @@
  *  ==============================================================================
  */
 
-import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import { ProSidebar, Menu, MenuItem, SubMenu, SidebarHeader } from 'react-pro-sidebar';
 import 'react-pro-sidebar/dist/css/styles.css';
 import "../App.css"
 
@@ -22,7 +22,10 @@ import "../App.css"
 function Sidebar(props) {
 
     return (
-        <ProSidebar>
+        <ProSidebar className="sidebar">
+            <SidebarHeader className="sidebarheader">
+                Popquiznotes
+            </SidebarHeader>
             <Menu iconShape="square">
                 {props.classes.map((val1, index) => {
                     return (

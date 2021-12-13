@@ -20,7 +20,9 @@ import "../App.css"
 
 function Notes() {
     return (
-        <h1>notes</h1>
+        <div className="notes">
+            <h1>Notes</h1>
+        </div>
     )
 }
 
