@@ -16,7 +16,7 @@
 
 
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 import "../App.css"
 import TextareaAutosize from 'react-textarea-autosize';
 var crypto = require('crypto');
@@ -95,6 +95,12 @@ function Question(props) {
         })
     }
 
+    function handleKeyDown(event) {
+        // TODO latex, image, indent, enter for new Q-A pair
+        console.log('key down in question')
+        props.handleKeyDown(event)
+    }
+
     return (
         <div>
             <TextareaAutosize
@@ -103,6 +109,7 @@ function Question(props) {
                 className="question"
                 rows="1"
                 onChange={(event) => handleChange(event)}
+                onKeyDown={(event) => handleKeyDown(event)}
             />
         </div>
     )
@@ -122,6 +129,12 @@ function Answer(props) {
         })
     }
 
+    function handleKeyDown(event) {
+        // TODO latex, image, indent, enter for new Q-A pair
+        console.log('key down in answer')
+        props.handleKeyDown(event)
+    }
+
     return (
         <div>
             <TextareaAutosize
@@ -130,6 +143,7 @@ function Answer(props) {
                 className="answer"
                 rows="1"
                 onChange={(event) => handleChange(event)}
+                onKeyDown={(event) => handleKeyDown(event)}
             />
         </div>
     )
@@ -147,12 +161,14 @@ function Questionanswers(props) {
                             question={val}
                             question_sequence={val['Sequence']}
                             handleChange={props.handleQuestionChange}
+                            handleKeyDown={props.handleKeyDown}
                         />
                         <Answer
                             text={props.answers[index]['Answer']}
                             answer={props.answers[index]}
                             answer_sequence={props.answers[index]['Sequence']}
                             handleChange={props.handleAnswerChange}
+                            handleKeyDown={props.handleKeyDown}
                         />
                     </div>
                 )
@@ -267,9 +283,9 @@ function Notes(props) {
 
     function _new_note(new_sequence) {
         const new_note = {
-            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') }, "Note": "",
             "Section": props.sectionname, "Subsection": props.subsectionname,
-            "type": "Note", "Sequence": new_sequence, "Changed": true, "Note": "",
+            "type": "Note", "Sequence": new_sequence, "Changed": true,
             "Image": "", "Latex": false, "Indent Level": "1"
         };
         return new_note;
@@ -370,6 +386,7 @@ function Notes(props) {
                     const new_note = _new_note(`${concept_sequence}.${sequence_val}`)
                     sequence_val++;
                     new_notes.push(new_note)
+                    console.log('new note', new_note)
                 }
             }
             var new_data = {};
@@ -382,7 +399,17 @@ function Notes(props) {
             console.log('delete note')
             event.preventDefault()
         }
+    }
 
+    function handleQuestionAnswerKeyDown(event) {
+        console.log('qa key down')
+        if (event.ctrlKey) {
+            console.log('control')
+            event.preventDefault()
+        } else if (event.keyCode === 13) {
+            console.log('new qa pair')
+            event.preventDefault()
+        }
     }
 
     return (
@@ -400,7 +427,6 @@ function Notes(props) {
                             <Concept
                                 concept={data[val]['concept']}
                                 text={data[val]['concept']['Concept Name']}
-                                // key={data[val]['concept']['_id']['$oid']}
                                 id={data[val]['concept']['_id']['$oid']}
                                 concept_sequence={val}
                                 handleChange={handleConceptChange} />
@@ -426,6 +452,7 @@ function Notes(props) {
                                 key={index1 + 'qa'}
                                 handleQuestionChange={handleQuestionChange}
                                 handleAnswerChange={handleAnswerChange}
+                                handleKeyDown={handleQuestionAnswerKeyDown}
                             />
                         </div>
 
