@@ -36,7 +36,6 @@ function App() {
 			const section_name = Object.keys(res.data[0]['Sections_dict'])[0];
 			setSectionname(section_name);
 			setSubsectionname(res.data[0]['Sections_dict'][section_name][0]);
-			// console.log('class: ', classname, 'section: ', sectionname, 'subsection: ', subsectionname);
 		})
 	}, [])
 
@@ -48,14 +47,6 @@ function App() {
 		console.log('updating class: ', val1['Name'], val2, val3)
 	}
 
-	function saveNotes(event) {
-		console.log('saving');
-	}
-
-	function newFirstNote(event) {
-		console.log('new first note');
-	}
-
 	return (
 		<div>
 			<Sidebar classes={classes} handleSubsectionClick={handleSubsectionClick} />
@@ -64,8 +55,6 @@ function App() {
 				classname={classname}
 				sectionname={sectionname}
 				subsectionname={subsectionname}
-				saveNotes={saveNotes}
-				newFirstNote={newFirstNote}
 			/>
 		</div>
 	)

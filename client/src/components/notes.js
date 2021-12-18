@@ -22,13 +22,27 @@ import TextareaAutosize from 'react-textarea-autosize';
 
 
 function Concept(props) {
+    const [concept, setConcept] = useState(props.concept)
+
+    function handleChange(event) {
+        let newValue = event.target.value;
+        setConcept(prevState => {
+            let newConcept = { ...prevState, Changed: true };
+            newConcept['Concept Name'] = newValue;
+            props.handleChange(newConcept, props.concept_sequence);
+            return newConcept;
+        })
+
+    }
+
     return (
         <div>
             <TextareaAutosize
                 type="text"
-                value={props.text}
+                value={concept['Concept Name']}
                 className="concept"
                 rows="1"
+                onChange={(event) => handleChange(event)}
             />
         </div>
     )
@@ -154,19 +168,64 @@ function Notes(props) {
         })
     }, [props.subsectionname])
 
+    function handleConceptChange(newConcept, sequence) {
+        data[sequence]['concept'] = newConcept;
+    }
+
+    function handleNoteChange(newNote, sequence) {
+        console.log('note change')
+    }
+
+    function saveNotes() {
+        console.log('save notes')
+        // extract out all the documents, loop through them and update the changed ones
+        var all_documents = [];
+        for (var i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const concept = data[key]['concept'];
+            const notes = data[key]['Notes'];
+            const questions = data[key]['Questions'];
+            const answers = data[key]['Answers'];
+            all_documents.push(concept)
+            all_documents = all_documents.concat(notes, questions, answers)
+        }
+
+        // go through all documents, and save the changed ones to mongodb
+        for (var i = 0; i < all_documents.length; i++) {
+            const document = all_documents[i];
+            if (document['Changed']) {
+                console.log('changed document:')
+                console.log(document)
+                axios.post(`https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Update_Document?class=${props.classname}`, document).then((res) => {
+                    console.log('body', res.data)
+                })
+            }
+        }
+    }
+
+    function newFirstNote() {
+        console.log('new first note')
+    }
+
     return (
         <div className="notes">
             <div className="notescontainer">
                 <h1>{props.classname} - {props.sectionname} - {props.subsectionname}</h1>
-                <button onClick={(event) => props.saveNotes(event)}>Save</button>
-                <button onClick={(event) => props.newFirstNote(event)}>New First Note</button>
+                <button onClick={(event) => saveNotes(event)}>Save</button>
+                <button onClick={(event) => newFirstNote(event)}>New First Note</button>
                 <br></br>
                 <br></br>
 
                 {Object.keys(data).map((val, index) => {
                     return (
                         <div key={index}>
-                            <Concept text={data[val]['concept']['Concept Name']} key={index + 'c'} />
+                            <Concept
+                                concept={data[val]['concept']}
+                                text={data[val]['concept']['Concept Name']}
+                                // key={data[val]['concept']['_id']['$oid']}
+                                id={data[val]['concept']['_id']['$oid']}
+                                concept_sequence={val}
+                                handleChange={handleConceptChange} />
                             <Notesection notes={data[val]['Notes']} key={index + 'n'} />
                             <Questionanswers
                                 questions={data[val]['Questions']}
