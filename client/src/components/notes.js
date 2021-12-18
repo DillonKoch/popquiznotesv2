@@ -62,6 +62,12 @@ function Note(props) {
         })
     }
 
+    function handleNoteKeyDown(event) {
+        // TODO handle enter, latex, indent level
+        console.log('note key down')
+        props.handleKeyDown(event, note)
+    }
+
     return (
         <div>
             <TextareaAutosize
@@ -70,6 +76,7 @@ function Note(props) {
                 className="note"
                 rows="1"
                 onChange={(event) => handleChange(event)}
+                onKeyDown={(event) => handleNoteKeyDown(event)}
             />
         </div>
     )
@@ -258,6 +265,16 @@ function Notes(props) {
         }
     }
 
+    function _new_note(new_sequence) {
+        const new_note = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Note", "Sequence": new_sequence, "Changed": true, "Note": "",
+            "Image": "", "Latex": false, "Indent Level": "1"
+        };
+        return new_note;
+    }
+
     function newFirstConcept() {
         console.log('new first concept')
         console.log(keys.length)
@@ -290,12 +307,7 @@ function Notes(props) {
             "Section": props.sectionname, "Subsection": props.subsectionname,
             "type": "Concept", "Sequence": new_sequence, "Changed": true, "Concept Name": ""
         };
-        const new_note = {
-            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
-            "Section": props.sectionname, "Subsection": props.subsectionname,
-            "type": "Note", "Sequence": new_sequence + ".1", "Changed": true, "Note": "",
-            "Image": "", "Latex": false, "Indent Level": 1
-        };
+        const new_note = _new_note(new_sequence + ".1")
         const new_question = {
             "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
             "Section": props.sectionname, "Subsection": props.subsectionname,
@@ -305,7 +317,7 @@ function Notes(props) {
             "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
             "Section": props.sectionname, "Subsection": props.subsectionname,
             "type": "Answer", "Sequence": new_sequence + ".1.1", "Changed": true, "Answer": "",
-            "Image": "", "Latex": false, "Indent Level": 1
+            "Image": "", "Latex": false, "Indent Level": "1"
         };
         const new_concept_obj = {
             "concept": new_concept,
@@ -319,6 +331,60 @@ function Notes(props) {
         console.log(keys)
     }
 
+    function handleNoteKeyDown(event, newNote) {
+        console.log('note key down')
+        console.log(newNote)
+        // getting the concept sequence
+        const sequence_vals = newNote['Sequence'].split('.').slice(0, 3);
+        const concept_sequence = sequence_vals.join('.');
+        console.log('concept sequence', concept_sequence)
+
+        if (event.ctrlKey) {
+            console.log('control')
+            if (event.keyCode === 76) {
+                console.log('latex')
+                event.preventDefault()
+            } else if (event.keyCode === 39) {
+                console.log('shift right')
+                event.preventDefault()
+            } else if (event.keyCode === 37) {
+                console.log('shift left')
+                event.preventDefault()
+            }
+        } else if (event.keyCode === 13) {
+            console.log('new note')
+            event.preventDefault()
+            var sequence_val = 1;
+            // loop through existing notes, update sequence, if we see the newNote ID, add a blank note
+            var new_notes = [];
+            for (var i = 0; i < data[concept_sequence]['Notes'].length; i++) {
+                var current_sequence = concept_sequence + `.${sequence_val}`
+                console.log(current_sequence)
+                var current_note = data[concept_sequence]['Notes'][i];
+                current_note['Sequence'] = `${concept_sequence}.${sequence_val}`;
+                new_notes.push(current_note);
+                sequence_val++;
+
+                if (data[concept_sequence]['Notes'][i]['_id']['$oid'] === newNote['_id']['$oid']) {
+                    console.log('found it')
+                    const new_note = _new_note(`${concept_sequence}.${sequence_val}`)
+                    sequence_val++;
+                    new_notes.push(new_note)
+                }
+            }
+            var new_data = {};
+            for (var i = 0; i < Object.keys(data).length; i++) {
+                new_data[Object.keys(data)[i]] = data[Object.keys(data)[i]]
+            }
+            new_data[concept_sequence]['Notes'] = new_notes;
+            setData(new_data)
+        } else if (event.keyCode === 8 & newNote['Note'].length === 0) {
+            console.log('delete note')
+            event.preventDefault()
+        }
+
+    }
+
     return (
         <div className="notes">
             <div className="notescontainer">
@@ -327,8 +393,6 @@ function Notes(props) {
                 <button onClick={(event) => newFirstConcept(event)}>New First Concept</button>
                 <br></br>
                 <br></br>
-                {/* <p>{keys[0]}</p> */}
-                {/* <p>{data[keys[0]]['concept']['Concept Name']}</p> */}
 
                 {Object.keys(data).map((val, index1) => {
                     return (
@@ -350,10 +414,12 @@ function Notes(props) {
                                         key={index2}
                                         note_sequence={val['Sequence']}
                                         handleChange={handleNoteChange}
+                                        handleKeyDown={handleNoteKeyDown}
                                     />
                                 )
                             })}
 
+                            <hr></hr>
                             <Questionanswers
                                 questions={data[val]['Questions']}
                                 answers={data[val]['Answers']}
@@ -372,17 +438,3 @@ function Notes(props) {
 }
 
 export default Notes;
-
-// function Notesection(props) {
-
-//     return (
-//         <div>
-//             {props.notes.map((val, index) => {
-//                 return (
-//                     <Note text={val['Note']} key={index} />
-//                 )
-
-//             })}
-//         </div>
-//     )
-// }

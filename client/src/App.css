@@ -28,6 +28,11 @@
   border-color: rgb(255, 255, 255);
 }
 
+.notes hr {
+  height: 3px;
+  background-color: rgb(0, 136, 255);
+}
+
 .sidebar {
   width: max(300px, 15%);
   position: fixed;
