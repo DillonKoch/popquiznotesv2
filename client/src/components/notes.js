@@ -49,27 +49,27 @@ function Concept(props) {
 }
 
 function Note(props) {
+    const [note, setNote] = useState(props.note)
+
+    function handleChange(event) {
+        let newValue = event.target.value;
+        setNote(prevState => {
+            let newNote = { ...prevState, Changed: true };
+            newNote['Note'] = newValue;
+            props.handleChange(newNote, props.note_sequence);
+            return newNote;
+        })
+    }
+
     return (
         <div>
             <TextareaAutosize
                 type="text"
-                value={props.text}
+                value={note['Note']}
                 className="note"
                 rows="1"
+                onChange={(event) => handleChange(event)}
             />
-        </div>
-    )
-}
-
-function Notesection(props) {
-    return (
-        <div>
-            {props.notes.map((val, index) => {
-                return (
-                    <Note text={val['Note']} key={index} />
-                )
-
-            })}
         </div>
     )
 }
@@ -173,11 +173,16 @@ function Notes(props) {
     }
 
     function handleNoteChange(newNote, sequence) {
+        // TODO test this
+        const sequence_vals = sequence.split('.').slice(0, 3);
+        const concept_sequence = sequence_vals.join('.');
         console.log('note change')
+        var new_note_id = newNote['_id']['$oid'];
+        var changed_note_index = data[concept_sequence]['Notes'].findIndex((note => note['_id']['$oid'] === new_note_id));
+        data[concept_sequence]['Notes'][changed_note_index] = newNote;
     }
 
-    function saveNotes() {
-        console.log('save notes')
+    function saveDocuments() {
         // extract out all the documents, loop through them and update the changed ones
         var all_documents = [];
         for (var i = 0; i < keys.length; i++) {
@@ -189,7 +194,6 @@ function Notes(props) {
             all_documents.push(concept)
             all_documents = all_documents.concat(notes, questions, answers)
         }
-
         // go through all documents, and save the changed ones to mongodb
         for (var i = 0; i < all_documents.length; i++) {
             const document = all_documents[i];
@@ -211,14 +215,14 @@ function Notes(props) {
         <div className="notes">
             <div className="notescontainer">
                 <h1>{props.classname} - {props.sectionname} - {props.subsectionname}</h1>
-                <button onClick={(event) => saveNotes(event)}>Save</button>
+                <button onClick={(event) => saveDocuments(event)}>Save</button>
                 <button onClick={(event) => newFirstNote(event)}>New First Note</button>
                 <br></br>
                 <br></br>
 
-                {Object.keys(data).map((val, index) => {
+                {Object.keys(data).map((val, index1) => {
                     return (
-                        <div key={index}>
+                        <div key={index1}>
                             <Concept
                                 concept={data[val]['concept']}
                                 text={data[val]['concept']['Concept Name']}
@@ -226,11 +230,24 @@ function Notes(props) {
                                 id={data[val]['concept']['_id']['$oid']}
                                 concept_sequence={val}
                                 handleChange={handleConceptChange} />
-                            <Notesection notes={data[val]['Notes']} key={index + 'n'} />
+
+                            {/* // * NOTES SECTION */}
+                            {data[val]['Notes'].map((val, index2) => {
+                                return (
+                                    <Note
+                                        note={val}
+                                        text={val['Note']}
+                                        key={index2}
+                                        note_sequence={val['Sequence']}
+                                        handleChange={handleNoteChange}
+                                    />
+                                )
+                            })}
+
                             <Questionanswers
                                 questions={data[val]['Questions']}
                                 answers={data[val]['Answers']}
-                                key={index + 'qa'} />
+                                key={index1 + 'qa'} />
                         </div>
 
                     )
@@ -242,3 +259,17 @@ function Notes(props) {
 }
 
 export default Notes;
+
+// function Notesection(props) {
+
+//     return (
+//         <div>
+//             {props.notes.map((val, index) => {
+//                 return (
+//                     <Note text={val['Note']} key={index} />
+//                 )
+
+//             })}
+//         </div>
+//     )
+// }
