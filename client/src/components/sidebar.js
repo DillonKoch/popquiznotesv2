@@ -20,6 +20,7 @@ import "../App.css"
 
 
 function Sidebar(props) {
+    // props.handleSubsectionClick()
 
     return (
         <ProSidebar className="sidebar">
@@ -27,21 +28,25 @@ function Sidebar(props) {
                 Popquiznotes
             </SidebarHeader>
             <Menu iconShape="square">
-                {props.classes.map((val1, index) => {
+                {props.classes.map((val1, index1) => {
                     return (
-                        <SubMenu title={val1['Name']}>
-                            <div>
-                                {Object.keys(val1['Sections_dict']).map((val2, index) => {
+                        <SubMenu title={val1['Name']} key={index1}>
+                            <div key={index1}>
+                                {Object.keys(val1['Sections_dict']).map((val2, index2) => {
                                     return (
-                                        <div>
-                                            <div>
-                                                <SubMenu title={val2}>
+                                        <div key={index2}>
+                                            <div key={index2}>
+                                                <SubMenu title={val2} key={index2}>
                                                     <div>
-                                                        {Object.values(val1['Sections_dict'][val2]).map((val3, index) => {
+                                                        {Object.values(val1['Sections_dict'][val2]).map((val3, index3) => {
                                                             return (
-                                                                <MenuItem>
-                                                                    <a href="https://google.com" >{val3}</a>
-                                                                </MenuItem>
+                                                                <div key={index3}>
+                                                                    <MenuItem key={index3}>
+                                                                        <button onClick={(event) => props.handleSubsectionClick(event, val1, val2, val3)} key={index3}>
+                                                                            {val3}
+                                                                        </button>
+                                                                    </MenuItem>
+                                                                </div>
                                                             )
                                                         })}
                                                     </div>
@@ -54,8 +59,8 @@ function Sidebar(props) {
                         </SubMenu>
                     )
                 })}
-            </Menu>
-        </ProSidebar>
+            </Menu >
+        </ProSidebar >
     )
 }
 

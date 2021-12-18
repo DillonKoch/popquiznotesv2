@@ -1,19 +1,95 @@
-.header h1 {
-  left: 15%;
-  position: absolute;
+/*
+ *  ==============================================================================
+ *  File: App.css
+ *  Project: client
+ *  File Created: Sunday, 12th December 2021 9:00:41 pm
+ *  Author: Dillon Koch
+ *  -----
+ *  Last Modified: Friday, 17th December 2021 5:13:54 pm
+ *  Modified By: Dillon Koch
+ *  -----
+ * 
+ *  -----
+ *  CSS for Popquiznotes
+ *  ==============================================================================
+ */
+
+.header {
+  border-color: blue;
+  border-style: solid;
+  /* margin-left: max(300px, 15%); */
+  text-align: center;
 }
 
 .notes {
-  margin-left: 15%;
-  margin-top: 5%;
-  position: absolute;
+  margin-left: max(300px, 15%);
+  top: 0%;
+  border-style: solid;
+  border-color: rgb(255, 255, 255);
+}
+
+.sidebar {
+  width: max(300px, 15%);
+  position: fixed;
+}
+
+.concept {
+  font-size: 15px;
+  width: 90%;
+  max-width: 90%;
+  outline: none;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: solid;
+  border-bottom-width: 4px;
+  background-color: rgb(179, 255, 241);
+  resize: none;
+}
+
+.note {
+  width: 90%;
+  max-width: 90%;
+  margin-left: 50px;
+  font-size: 15px;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: solid;
+  border-bottom-color: rgb(181, 186, 182);
+  outline: none;
+  resize: none;
+}
+
+.question {
+  font-size: 15px;
+  width: 90%;
+  max-width: 90%;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: solid;
+  border-bottom-color: rgb(59, 134, 253);
+  outline: none;
+  resize: none;
+  color: rgb(100, 100, 100)
+}
+
+.answer {
+  width: 90%;
+  max-width: 90%;
+  margin-left: 50px;
+  font-size: 15px;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: solid;
+  border-bottom-color: rgb(181, 186, 182);
+  outline: none;
+  resize: none;
 }
 
 .sidebarheader {
   font-size: 40px;
   color: rgb(51, 181, 179);
-}
-
-.sidebar {
-  position: absolute;
 }

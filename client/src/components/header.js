@@ -20,8 +20,11 @@ import "../App.css"
 function Header(props) {
     return (
         <div className="header">
-            {/* <img src="https://res.cloudinary.com/popquiznotes-com/image/upload/v1626837995/Site-Images/poquiznotes_ohic2p.png" alt="logo" /> */}
-            <h1>header</h1>
+            <div>
+                <h1>{props.class} - {props.section} - {props.subsection}</h1>
+                {/* <button onClick={(event) => props.saveNotes(event)}>Save</button> */}
+                {/* <button onClick={(event) => props.newFirstNote(event)}>New First Note</button> */}
+            </div>
         </div>
     )
 }
