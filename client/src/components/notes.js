@@ -19,6 +19,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import "../App.css"
 import TextareaAutosize from 'react-textarea-autosize';
+var crypto = require('crypto');
 
 
 function Concept(props) {
@@ -75,13 +76,26 @@ function Note(props) {
 }
 
 function Question(props) {
+    const [question, setQuestion] = useState(props.question);
+
+    function handleChange(event) {
+        let newValue = event.target.value;
+        setQuestion(prevState => {
+            let newQuestion = { ...prevState, Changed: true };
+            newQuestion['Question'] = newValue;
+            props.handleChange(newQuestion, props.question_sequence);
+            return newQuestion;
+        })
+    }
+
     return (
         <div>
             <TextareaAutosize
                 type="text"
-                value={props.text}
+                value={question['Question']}
                 className="question"
                 rows="1"
+                onChange={(event) => handleChange(event)}
             />
         </div>
     )
@@ -89,12 +103,26 @@ function Question(props) {
 
 
 function Answer(props) {
+    const [answer, setAnswer] = useState(props.answer);
+
+    function handleChange(event) {
+        let newValue = event.target.value;
+        setAnswer(prevState => {
+            let newAnswer = { ...prevState, Changed: true };
+            newAnswer['Answer'] = newValue;
+            props.handleChange(newAnswer, props.answer_sequence);
+            return newAnswer;
+        })
+    }
+
     return (
         <div>
             <TextareaAutosize
                 type="text"
-                value={props.text}
+                value={answer['Answer']}
                 className="answer"
+                rows="1"
+                onChange={(event) => handleChange(event)}
             />
         </div>
     )
@@ -107,8 +135,18 @@ function Questionanswers(props) {
             {props.questions.map((val, index) => {
                 return (
                     <div key={index}>
-                        <Question text={val['Question']} />
-                        <Answer text={props.answers[index]['Answer']} />
+                        <Question
+                            text={val['Question']}
+                            question={val}
+                            question_sequence={val['Sequence']}
+                            handleChange={props.handleQuestionChange}
+                        />
+                        <Answer
+                            text={props.answers[index]['Answer']}
+                            answer={props.answers[index]}
+                            answer_sequence={props.answers[index]['Sequence']}
+                            handleChange={props.handleAnswerChange}
+                        />
                     </div>
                 )
             })}
@@ -120,10 +158,8 @@ function Notes(props) {
     const [data, setData] = useState([]);
     const [keys, setKeys] = useState([]);
 
-
     useEffect(() => {
         // * building URL
-        console.log('note class', props.classname, props.sectionname, props.subsectionname)
         var url_base_string = "https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Query_Notes";
         var url_param_string = `?class=${props.classname}&section=${props.sectionname}&subsection=${props.subsectionname}`;
         var url = url_base_string + url_param_string.replace(/ /g, '%20');
@@ -159,12 +195,10 @@ function Notes(props) {
                     cleaned_data[concept_sequence][document_type + 's'].push(document)
                 }
             }
-            console.log('fully cleaned data:')
-            console.log(cleaned_data)
-            setData(cleaned_data)
-            setKeys(Object.keys(cleaned_data));
-            console.log('KEYS', keys.length, typeof keys, keys[0])
-
+            console.log('fully cleaned data:', cleaned_data)
+            setKeys(Object.keys(cleaned_data))
+            setData([]); // stupid solution to rerender but it works
+            setData(cleaned_data);
         })
     }, [props.subsectionname])
 
@@ -173,13 +207,30 @@ function Notes(props) {
     }
 
     function handleNoteChange(newNote, sequence) {
-        // TODO test this
         const sequence_vals = sequence.split('.').slice(0, 3);
         const concept_sequence = sequence_vals.join('.');
         console.log('note change')
         var new_note_id = newNote['_id']['$oid'];
         var changed_note_index = data[concept_sequence]['Notes'].findIndex((note => note['_id']['$oid'] === new_note_id));
         data[concept_sequence]['Notes'][changed_note_index] = newNote;
+    }
+
+    function handleQuestionChange(newQuestion, sequence) {
+        const sequence_vals = sequence.split('.').slice(0, 3);
+        const concept_sequence = sequence_vals.join('.');
+        console.log('question change')
+        var new_question_id = newQuestion['_id']['$oid'];
+        var changed_question_index = data[concept_sequence]['Questions'].findIndex((question => question['_id']['$oid'] === new_question_id));
+        data[concept_sequence]['Questions'][changed_question_index] = newQuestion;
+    }
+
+    function handleAnswerChange(newAnswer, sequence) {
+        const sequence_vals = sequence.split('.').slice(0, 3);
+        const concept_sequence = sequence_vals.join('.');
+        console.log('answer change')
+        var new_answer_id = newAnswer['_id']['$oid'];
+        var changed_answer_index = data[concept_sequence]['Answers'].findIndex((answer => answer['_id']['$oid'] === new_answer_id));
+        data[concept_sequence]['Answers'][changed_answer_index] = newAnswer;
     }
 
     function saveDocuments() {
@@ -207,8 +258,65 @@ function Notes(props) {
         }
     }
 
-    function newFirstNote() {
-        console.log('new first note')
+    function newFirstConcept() {
+        console.log('new first concept')
+        console.log(keys.length)
+
+        for (var i = 0; i < props.classes.length; i++) {
+            if (props.classes[i]['Name'] === props.classname) {
+                var class_index = i;
+                break;
+            }
+        }
+        const sections = Object.keys(props.classes[class_index]['Sections_dict']);
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i] === props.sectionname) {
+                var section_index = i + 1;
+                break;
+            }
+        }
+        const subsections = props.classes[class_index]['Sections_dict'][props.sectionname]
+        for (var i = 0; i < subsections.length; i++) {
+            if (subsections[i] === props.subsectionname) {
+                var subsection_index = i + 1;
+                break;
+            }
+        }
+
+        var new_sequence = `${section_index}.${subsection_index}.1`;
+
+        const new_concept = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Concept", "Sequence": new_sequence, "Changed": true, "Concept Name": ""
+        };
+        const new_note = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Note", "Sequence": new_sequence + ".1", "Changed": true, "Note": "",
+            "Image": "", "Latex": false, "Indent Level": 1
+        };
+        const new_question = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Question", "Sequence": new_sequence + ".1", "Changed": true, "Question": "",
+        };
+        const new_answer = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Answer", "Sequence": new_sequence + ".1.1", "Changed": true, "Answer": "",
+            "Image": "", "Latex": false, "Indent Level": 1
+        };
+        const new_concept_obj = {
+            "concept": new_concept,
+            "Notes": [new_note],
+            "Questions": [new_question],
+            "Answers": [new_answer]
+        }
+        data[new_sequence] = new_concept_obj;
+        setKeys([new_sequence]);
+        console.log(data)
+        console.log(keys)
     }
 
     return (
@@ -216,9 +324,11 @@ function Notes(props) {
             <div className="notescontainer">
                 <h1>{props.classname} - {props.sectionname} - {props.subsectionname}</h1>
                 <button onClick={(event) => saveDocuments(event)}>Save</button>
-                <button onClick={(event) => newFirstNote(event)}>New First Note</button>
+                <button onClick={(event) => newFirstConcept(event)}>New First Concept</button>
                 <br></br>
                 <br></br>
+                {/* <p>{keys[0]}</p> */}
+                {/* <p>{data[keys[0]]['concept']['Concept Name']}</p> */}
 
                 {Object.keys(data).map((val, index1) => {
                     return (
@@ -247,7 +357,10 @@ function Notes(props) {
                             <Questionanswers
                                 questions={data[val]['Questions']}
                                 answers={data[val]['Answers']}
-                                key={index1 + 'qa'} />
+                                key={index1 + 'qa'}
+                                handleQuestionChange={handleQuestionChange}
+                                handleAnswerChange={handleAnswerChange}
+                            />
                         </div>
 
                     )

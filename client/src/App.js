@@ -52,6 +52,7 @@ function App() {
 			<Sidebar classes={classes} handleSubsectionClick={handleSubsectionClick} />
 			{/* // TODO add the if __ show notes, otherwise show quiz thing here eventually */}
 			<Notes
+				classes={classes}
 				classname={classname}
 				sectionname={sectionname}
 				subsectionname={subsectionname}
