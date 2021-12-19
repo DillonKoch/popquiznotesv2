@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Sidebar from "./components/sidebar";
-import Header from "./components/header";
+// import Header from "./components/header";
 import Notes from "./components/notes";
 import axios from 'axios';
 
