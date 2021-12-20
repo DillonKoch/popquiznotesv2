@@ -19,6 +19,25 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import "../App.css";
+var crypto = require('crypto');
+
+function _find_concept_sequence(sequence) {
+    const sequence_vals = sequence.split('.').slice(0, 3);
+    const concept_sequence = sequence_vals.join('.')
+    return concept_sequence
+}
+
+function _find_question_sequence(sequence) {
+    const sequence_vals = sequence.split('.').slice(0, 4);
+    const question_sequence = sequence_vals.join('.')
+    return question_sequence
+}
+
+function _find_last_sequence_val(sequence) {
+    const sequence_vals = sequence.split('.')
+    return parseInt(sequence_vals.slice(-1)[0]);
+}
+
 
 function Concept(props) {
     const [concept, setConcept] = useState(props.concept)
@@ -50,6 +69,11 @@ function Concept(props) {
 function Note(props) {
     const [note, setNote] = useState(props.note);
 
+    useEffect(() => {
+        setNote([])
+        setNote(props.note)
+    }, [props.note])
+
     function handleChange(event) {
         let newValue = event.target.value;
         setNote(prevState => {
@@ -61,7 +85,7 @@ function Note(props) {
     }
 
     function handleNoteKeyDown(event) {
-        console.log('note key down')
+        props.handleKeyDown(event, note)
     }
 
     return (
@@ -85,14 +109,22 @@ function NotesSection(props) {
     useEffect(() => {
         var new_concept_notes = [];
         for (var i = 0; i < props.notes.length; i++) {
-            const sequence = props.notes[i]['Sequence'];
-            const sequence_vals = sequence.split('.').slice(0, 3);
-            const concept_sequence = sequence_vals.join('.')
+            const concept_sequence = _find_concept_sequence(props.notes[i]['Sequence'])
             if (concept_sequence === props.concept['Sequence']) {
                 new_concept_notes.push(props.notes[i]);
             }
         }
-        setConceptnotes(new_concept_notes);
+        new_concept_notes.sort(function (a, b) {
+            var keyA = a['Sequence'],
+                keyB = b['Sequence'];
+            // Compare the 2 sequences
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        })
+        setConceptnotes([])
+        console.log(new_concept_notes)
+        setConceptnotes(new_concept_notes)
     }, [props.notes, props.concept])
 
     return (
@@ -103,6 +135,7 @@ function NotesSection(props) {
                         <Note
                             note={conceptnote}
                             handleChange={props.handleChange}
+                            handleKeyDown={props.handleKeyDown}
                         />
                     </div>
                 )
@@ -113,6 +146,11 @@ function NotesSection(props) {
 
 function Question(props) {
     const [question, setQuestion] = useState(props.question);
+
+    useEffect(() => {
+        setQuestion([])
+        setQuestion(props.question)
+    }, [props.question])
 
     function handleChange(event) {
         let newValue = event.target.value;
@@ -125,8 +163,8 @@ function Question(props) {
     }
 
     function handleKeyDown(event) {
-        // TODO not done
         console.log('question key down')
+        props.handleKeyDown(event, question)
     }
 
     return (
@@ -146,6 +184,11 @@ function Question(props) {
 function Answer(props) {
     const [answer, setAnswer] = useState(props.answer);
 
+    useEffect(() => {
+        setAnswer([])
+        setAnswer(props.answer)
+    }, [props.answer])
+
     function handleChange(event) {
         let newValue = event.target.value;
         setAnswer(prevState => {
@@ -156,6 +199,11 @@ function Answer(props) {
         })
     }
 
+    function handleKeyDown(event) {
+        console.log('answer key down')
+        props.handleKeyDown(event, answer)
+    }
+
     return (
         <div>
             <TextareaAutosize
@@ -164,7 +212,7 @@ function Answer(props) {
                 className="answer"
                 rows="1"
                 onChange={(event) => handleChange(event)}
-            // onKeyDown={(event) => handleKeyDown(event)}
+                onKeyDown={(event) => handleKeyDown(event)}
             />
         </div>
     )
@@ -178,13 +226,20 @@ function AnswerSection(props) {
         // * filtering down props.answers to only the answers for the current question
         var new_question_answers = []
         for (var i = 0; i < props.answers.length; i++) {
-            const sequence = props.answers[i]['Sequence'];
-            const sequence_vals = sequence.split('.').slice(0, 4);
-            const question_sequence = sequence_vals.join('.')
+            const question_sequence = _find_question_sequence(props.answers[i]['Sequence'])
             if (question_sequence === props.question['Sequence']) {
                 new_question_answers.push(props.answers[i]);
             }
         }
+        new_question_answers.sort(function (a, b) {
+            var keyA = a['Sequence'],
+                keyB = b['Sequence'];
+            // Compare the 2 sequences
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        })
+        setQuestionanswers([]);
         setQuestionanswers(new_question_answers);
     }, [props.answers, props.question])
 
@@ -197,6 +252,7 @@ function AnswerSection(props) {
                             key={index + 'qa'}
                             answer={answer}
                             handleChange={props.handleChange}
+                            handleKeyDown={props.handleKeyDown}
                         />
                     </div>
                 )
@@ -216,13 +272,20 @@ function QuestionAnswers(props) {
         var current_concept_questions = [];
         for (var i = 0; i < props.questions.length; i++) {
             const question = props.questions[i];
-            const question_sequence = question['Sequence'];
-            const question_sequence_vals = question_sequence.split('.').slice(0, 3);
-            const question_concept_sequence = question_sequence_vals.join('.')
+            const question_concept_sequence = _find_concept_sequence(question['Sequence'])
             if (question_concept_sequence === props.concept['Sequence']) {
                 current_concept_questions.push(question);
             }
         }
+        current_concept_questions.sort(function (a, b) {
+            var keyA = a['Sequence'],
+                keyB = b['Sequence'];
+            // Compare the 2 sequences
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        })
+        setConceptquestions([])
         setConceptquestions(current_concept_questions);
 
         // ! ANSWERS
@@ -231,13 +294,12 @@ function QuestionAnswers(props) {
         var current_concept_answers = [];
         for (var j = 0; j < props.answers.length; j++) {
             const answer = props.answers[j];
-            const answer_sequence = answer['Sequence'];
-            const answer_sequence_vals = answer_sequence.split('.').slice(0, 3);
-            const answer_concept_sequence = answer_sequence_vals.join('.')
+            const answer_concept_sequence = _find_concept_sequence(answer['Sequence'])
             if (answer_concept_sequence === props.concept['Sequence']) {
                 current_concept_answers.push(answer);
             }
         }
+        setConceptanswers([])
         setConceptanswers(current_concept_answers);
 
     }, [props.questions, props.answers, props.concept])
@@ -251,12 +313,14 @@ function QuestionAnswers(props) {
                             key={index + 'q'}
                             question={question}
                             handleChange={props.handleQuestionChange}
+                            handleKeyDown={props.handleQuestionKeyDown}
                         />
                         <AnswerSection
                             key={index + 'a'}
                             question={question}
                             answers={conceptanswers}
                             handleChange={props.handleAnswerChange}
+                            handleKeyDown={props.handleAnswerKeyDown}
                         />
                     </div>
                 )
@@ -307,6 +371,36 @@ function Notes(props) {
             console.log('answers', new_answers);
         })
     }, [props.subsectionname, props.sectionname, props.classname])
+
+    function build_new_note(new_sequence) {
+        const new_note = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') }, "Note": "",
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Note", "Sequence": new_sequence, "Changed": true,
+            "Image": "", "Latex": false, "Indent Level": "1"
+        };
+        return new_note;
+    }
+
+    function build_new_answer(new_sequence) {
+        const new_answer = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') }, "Answer": "",
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Answer", "Sequence": new_sequence, "Changed": true,
+            "Image": "", "Latex": false, "Indent Level": "1"
+        };
+        return new_answer;
+    }
+
+    function build_new_question(new_sequence) {
+        const new_question = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') }, "Question": "",
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Question", "Sequence": new_sequence, "Changed": true,
+            "Image": "", "Latex": false, "Indent Level": "1"
+        };
+        return new_question;
+    }
 
     function handleConceptChange(newConcept) {
         console.log('concept change')
@@ -376,6 +470,161 @@ function Notes(props) {
         }
     }
 
+    function handleConceptKeyDown(event) {
+        console.log('concept key down')
+    }
+
+    function handleNoteKeyDown(event, note) {
+        console.log('note key down')
+
+        const note_concept_sequence = _find_concept_sequence(note['Sequence'])
+
+        if (event.ctrlKey) {
+            if (event.keyCode === 76) {
+                console.log('latex')
+                event.preventDefault()
+            } else if (event.keyCode === 39) {
+                console.log('shift right')
+                event.preventDefault()
+            } else if (event.keyCode === 37) {
+                console.log('shift left')
+                event.preventDefault()
+            }
+        } else if (event.keyCode === 13) {
+            console.log('new note')
+            event.preventDefault()
+            // * find notes inside and outside the current concept
+            var concept_notes = [];
+            var non_concept_notes = [];
+            for (var i = 0; i < notes.length; i++) {
+                const current_note = notes[i];
+                const current_note_concept_sequence = _find_concept_sequence(current_note['Sequence'])
+                if (current_note_concept_sequence === note_concept_sequence) {
+                    concept_notes.push(current_note);
+                } else {
+                    non_concept_notes.push(current_note);
+                }
+            }
+            // * loop through concept notes, updating the sequences
+            var new_concept_notes = [];
+            const note_sequence_val = _find_last_sequence_val(note['Sequence'])
+            for (var i = 0; i < concept_notes.length; i++) {
+                const concept_note = concept_notes[i];
+                const concept_note_sequence_val = _find_last_sequence_val(concept_note['Sequence'])
+                if (concept_note_sequence_val > note_sequence_val) {
+                    concept_note['Sequence'] = note_concept_sequence + `.${concept_note_sequence_val + 1}`
+                }
+                new_concept_notes.push(concept_note)
+            }
+            // * add new note to concept notes
+            const new_note_sequence = note_concept_sequence + `.${note_sequence_val + 1}`
+            const new_note = build_new_note(new_note_sequence);
+            new_concept_notes.push(new_note);
+            // * add the new list of concept notes and the non-concept notes, set notes to this list
+            const all_new_notes = new_concept_notes.concat(non_concept_notes);
+            console.log(all_new_notes)
+            setNotes([])
+            setNotes(all_new_notes)
+        }
+    }
+
+    function _question_answer_enter(event, question_answer) {
+        console.log('new qa')
+        event.preventDefault()
+        const question_concept_sequence = _find_concept_sequence(question_answer['Sequence'])
+
+        // * find questions and answers inside and outside the current concept
+        // ! questions
+        var concept_questions = [];
+        var non_concept_questions = [];
+        for (var i = 0; i < questions.length; i++) {
+            const current_question = questions[i];
+            const current_question_concept_sequence = _find_concept_sequence(current_question['Sequence'])
+            if (current_question_concept_sequence === question_concept_sequence) {
+                concept_questions.push(current_question);
+            } else {
+                non_concept_questions.push(current_question);
+            }
+        }
+        // ! answers
+        var concept_answers = [];
+        var non_concept_answers = [];
+        for (var i = 0; i < answers.length; i++) {
+            const current_answer = answers[i];
+            const current_answer_concept_sequence = _find_concept_sequence(current_answer['Sequence'])
+            if (current_answer_concept_sequence === question_concept_sequence) {
+                concept_answers.push(current_answer);
+            } else {
+                non_concept_answers.push(current_answer);
+            }
+        }
+
+        // * loop through concept q/a's, updating the sequences
+        // ! questions
+        var new_concept_questions = [];
+        const question_sequence_val = _find_last_sequence_val(question_answer['Sequence'])
+        for (var i = 0; i < concept_questions.length; i++) {
+            const concept_question = concept_questions[i];
+            const concept_question_sequence_val = _find_last_sequence_val(concept_question['Sequence'])
+            if (concept_question_sequence_val > question_sequence_val) {
+                concept_question['Sequence'] = question_concept_sequence + `.${concept_question_sequence_val + 1}`
+            }
+            new_concept_questions.push(concept_question)
+        }
+
+        // ! answers
+        var new_concept_answers = [];
+        for (var i = 0; i < concept_answers.length; i++) {
+            const concept_answer = concept_answers[i];
+            const concept_answer_sequence_val = _find_last_sequence_val(concept_answer['Sequence'])
+            if (concept_answer_sequence_val > question_sequence_val) {
+                concept_answer['Sequence'] = question_concept_sequence + `.${concept_answer_sequence_val + 1}`
+            }
+            new_concept_answers.push(concept_answer)
+        }
+
+        // * add new q/a to concept q/a's
+        // ! question
+        const new_question_sequence = question_concept_sequence + `.${question_sequence_val + 1}`
+        const new_question = build_new_question(new_question_sequence);
+        new_concept_questions.push(new_question);
+
+        // ! answer
+        const new_answer_sequence = question_concept_sequence + `.${question_sequence_val + 1}`
+        const new_answer = build_new_answer(new_answer_sequence);
+        new_concept_answers.push(new_answer);
+
+        // * add the new list of concept q/a's and the non-concept q/a's, set q/a to this list
+        // ! question
+        const all_new_questions = new_concept_questions.concat(non_concept_questions)
+        setQuestions([])
+        setQuestions(all_new_questions)
+
+        // ! answer
+        const all_new_answers = new_concept_answers.concat(non_concept_answers)
+        setAnswers([])
+        setAnswers(all_new_answers)
+    }
+
+    function handleQuestionKeyDown(event, question) {
+        console.log('question key down')
+        const question_concept_sequence = _find_concept_sequence(question['Sequence'])
+
+        if (event.keyCode === 13) {
+            _question_answer_enter(event, question)
+        }
+    }
+
+    function handleAnswerKeyDown(event, answer) {
+        console.log('answer key down')
+        // TODO want to replicate most of the code in the above method for questions,
+        // TODO take it out and put into a helper method probably
+
+        if (event.keyCode === 13) {
+            _question_answer_enter(event, answer)
+        }
+    }
+
     function newFirstConcept(event) {
         console.log('new first concept')
     }
@@ -395,12 +644,14 @@ function Notes(props) {
                             key={index + 'c'}
                             concept={concept}
                             handleChange={handleConceptChange}
+                            handleKeyDown={handleConceptKeyDown}
                         />
                         <NotesSection
                             key={index + 'n'}
                             concept={concept}
                             notes={notes}
                             handleChange={handleNoteChange}
+                            handleKeyDown={handleNoteKeyDown}
                         />
                         <QuestionAnswers
                             key={index + 'qa'}
@@ -409,6 +660,8 @@ function Notes(props) {
                             answers={answers}
                             handleQuestionChange={handleQuestionChange}
                             handleAnswerChange={handleAnswerChange}
+                            handleQuestionKeyDown={handleQuestionKeyDown}
+                            handleAnswerKeyDown={handleAnswerKeyDown}
                         />
                     </div>
                 )
