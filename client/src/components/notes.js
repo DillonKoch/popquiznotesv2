@@ -21,6 +21,20 @@ import TextareaAutosize from 'react-textarea-autosize';
 import "../App.css";
 var crypto = require('crypto');
 
+// function _find_section_subsection_sequence(sequence) {
+//     const sequence_vals = sequence.split('.').slice(0, 2);
+//     const section_subsection_sequence = sequence_vals.join('.')
+//     return section_subsection_sequence
+// }
+
+function _increment_concept(sequence) {
+    const sequence_vals = sequence.split('.')
+    sequence_vals[2]++
+    console.log(sequence, sequence_vals.join('.'))
+    return sequence_vals.join('.')
+
+}
+
 function _find_concept_sequence(sequence) {
     const sequence_vals = sequence.split('.').slice(0, 3);
     const concept_sequence = sequence_vals.join('.')
@@ -38,9 +52,31 @@ function _find_last_sequence_val(sequence) {
     return parseInt(sequence_vals.slice(-1)[0]);
 }
 
+function _find_concept_val(sequence) {
+    const sequence_vals = sequence.split('.')
+    return sequence_vals[2]
+}
+
+function _sort_by_sequence(arr) {
+    arr.sort(function (a, b) {
+        var keyA = a['Sequence'],
+            keyB = b['Sequence'];
+        // Compare the 2 sequences
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+    })
+    return arr
+}
+
 
 function Concept(props) {
     const [concept, setConcept] = useState(props.concept)
+
+    useEffect(() => {
+        setConcept([])
+        setConcept(props.concept)
+    }, [props.concept])
 
     function handleChange(event) {
         let newValue = event.target.value;
@@ -52,6 +88,10 @@ function Concept(props) {
         });
     }
 
+    function handleKeyDown(event) {
+        props.handleKeyDown(event, concept)
+    }
+
     return (
         <div>
             <TextareaAutosize
@@ -60,6 +100,7 @@ function Concept(props) {
                 className="concept"
                 rows="1"
                 onChange={(event) => handleChange(event)}
+                onKeyDown={(event) => handleKeyDown(event)}
             />
         </div>
     )
@@ -114,14 +155,15 @@ function NotesSection(props) {
                 new_concept_notes.push(props.notes[i]);
             }
         }
-        new_concept_notes.sort(function (a, b) {
-            var keyA = a['Sequence'],
-                keyB = b['Sequence'];
-            // Compare the 2 sequences
-            if (keyA < keyB) return -1;
-            if (keyA > keyB) return 1;
-            return 0;
-        })
+        // new_concept_notes.sort(function (a, b) {
+        //     var keyA = a['Sequence'],
+        //         keyB = b['Sequence'];
+        //     // Compare the 2 sequences
+        //     if (keyA < keyB) return -1;
+        //     if (keyA > keyB) return 1;
+        //     return 0;
+        // })
+        new_concept_notes = _sort_by_sequence(new_concept_notes)
         setConceptnotes([])
         console.log(new_concept_notes)
         setConceptnotes(new_concept_notes)
@@ -231,14 +273,15 @@ function AnswerSection(props) {
                 new_question_answers.push(props.answers[i]);
             }
         }
-        new_question_answers.sort(function (a, b) {
-            var keyA = a['Sequence'],
-                keyB = b['Sequence'];
-            // Compare the 2 sequences
-            if (keyA < keyB) return -1;
-            if (keyA > keyB) return 1;
-            return 0;
-        })
+        // new_question_answers.sort(function (a, b) {
+        //     var keyA = a['Sequence'],
+        //         keyB = b['Sequence'];
+        //     // Compare the 2 sequences
+        //     if (keyA < keyB) return -1;
+        //     if (keyA > keyB) return 1;
+        //     return 0;
+        // })
+        new_question_answers = _sort_by_sequence(new_question_answers)
         setQuestionanswers([]);
         setQuestionanswers(new_question_answers);
     }, [props.answers, props.question])
@@ -277,14 +320,15 @@ function QuestionAnswers(props) {
                 current_concept_questions.push(question);
             }
         }
-        current_concept_questions.sort(function (a, b) {
-            var keyA = a['Sequence'],
-                keyB = b['Sequence'];
-            // Compare the 2 sequences
-            if (keyA < keyB) return -1;
-            if (keyA > keyB) return 1;
-            return 0;
-        })
+        // current_concept_questions.sort(function (a, b) {
+        //     var keyA = a['Sequence'],
+        //         keyB = b['Sequence'];
+        //     // Compare the 2 sequences
+        //     if (keyA < keyB) return -1;
+        //     if (keyA > keyB) return 1;
+        //     return 0;
+        // })
+        current_concept_questions = _sort_by_sequence(current_concept_questions)
         setConceptquestions([])
         setConceptquestions(current_concept_questions);
 
@@ -371,6 +415,15 @@ function Notes(props) {
             console.log('answers', new_answers);
         })
     }, [props.subsectionname, props.sectionname, props.classname])
+
+    function build_new_concept(new_sequence) {
+        var new_concept = {
+            "_id": { "$oid": crypto.randomBytes(12).toString('hex') },
+            "Section": props.sectionname, "Subsection": props.subsectionname,
+            "type": "Concept", "Sequence": new_sequence, "Changed": true, "Concept Name": ""
+        }
+        return new_concept;
+    }
 
     function build_new_note(new_sequence) {
         const new_note = {
@@ -470,8 +523,83 @@ function Notes(props) {
         }
     }
 
-    function handleConceptKeyDown(event) {
+    function handleConceptKeyDown(event, concept) {
         console.log('concept key down')
+
+        if (event.keyCode === 13) {
+            console.log('enter')
+            event.preventDefault()
+
+            const concept_sequence = concept['Sequence']
+            const concept_last_val = _find_last_sequence_val(concept_sequence)
+
+            // * loop through all concepts, notes, questions, answers to update sequences
+            // * concepts
+            var new_concepts = [];
+            for (var i = 0; i < concepts.length; i++) {
+                const current_concept = concepts[i]
+                const current_concept_last_val = _find_last_sequence_val(current_concept['Sequence'])
+                if (current_concept_last_val > concept_last_val) {
+                    current_concept['Sequence'] = _increment_concept(current_concept['Sequence'])
+                }
+                new_concepts.push(current_concept)
+            }
+            // * notes
+            var new_notes = [];
+            for (var j = 0; j < notes.length; j++) {
+                const current_note = notes[j]
+                const current_note_concept_val = _find_concept_val(current_note['Sequence'])
+                if (current_note_concept_val > concept_last_val) {
+                    current_note['Sequence'] = _increment_concept(current_note['Sequence'])
+                }
+                new_notes.push(current_note)
+            }
+            // * questions
+            var new_questions = [];
+            for (var k = 0; k < questions.length; k++) {
+                const current_question = questions[k]
+                const current_question_concept_val = _find_concept_val(current_question['Sequence'])
+                if (current_question_concept_val > concept_last_val) {
+                    current_question['Sequence'] = _increment_concept(current_question['Sequence'])
+                }
+                new_questions.push(current_question)
+            }
+            // * answers
+            var new_answers = [];
+            for (var l = 0; l < answers.length; l++) {
+                const current_answer = answers[l]
+                const current_answer_concept_val = _find_concept_val(current_answer['Sequence'])
+                if (current_answer_concept_val > concept_last_val) {
+                    current_answer['Sequence'] = _increment_concept(current_answer['Sequence'])
+                }
+                new_answers.push(current_answer)
+            }
+
+            // * adding new concept/note/question/answer
+            const new_concept_sequence = _increment_concept(concept_sequence)
+            const new_concept = build_new_concept(new_concept_sequence);
+            const new_note = build_new_note(new_concept_sequence + '.1');
+            const new_question = build_new_question(new_concept_sequence + '.1');
+            const new_answer = build_new_answer(new_concept_sequence + '.1.1');
+            new_concepts.push(new_concept)
+            new_notes.push(new_note)
+            new_questions.push(new_question)
+            new_answers.push(new_answer)
+
+            new_concepts = _sort_by_sequence(new_concepts)
+            new_notes = _sort_by_sequence(new_notes)
+            new_questions = _sort_by_sequence(new_questions)
+            new_answers = _sort_by_sequence(new_answers)
+
+            setConcepts(new_concepts)
+            setNotes(new_notes)
+            setQuestions(new_questions)
+            setAnswers(new_answers)
+            console.log('concepts', new_concepts)
+            console.log('notes', new_notes)
+            console.log('questions', new_questions)
+            console.log('answers', new_answers)
+        }
     }
 
     function handleNoteKeyDown(event, note) {
@@ -513,6 +641,7 @@ function Notes(props) {
                 const concept_note_sequence_val = _find_last_sequence_val(concept_note['Sequence'])
                 if (concept_note_sequence_val > note_sequence_val) {
                     concept_note['Sequence'] = note_concept_sequence + `.${concept_note_sequence_val + 1}`
+                    concept_note['Changed'] = true
                 }
                 new_concept_notes.push(concept_note)
             }
@@ -568,6 +697,7 @@ function Notes(props) {
             const concept_question_sequence_val = _find_last_sequence_val(concept_question['Sequence'])
             if (concept_question_sequence_val > question_sequence_val) {
                 concept_question['Sequence'] = question_concept_sequence + `.${concept_question_sequence_val + 1}`
+                concept_question['Changed'] = true;
             }
             new_concept_questions.push(concept_question)
         }
@@ -579,6 +709,7 @@ function Notes(props) {
             const concept_answer_sequence_val = _find_last_sequence_val(concept_answer['Sequence'])
             if (concept_answer_sequence_val > question_sequence_val) {
                 concept_answer['Sequence'] = question_concept_sequence + `.${concept_answer_sequence_val + 1}`
+                concept_answer['Changed'] = true
             }
             new_concept_answers.push(concept_answer)
         }
@@ -608,7 +739,6 @@ function Notes(props) {
 
     function handleQuestionKeyDown(event, question) {
         console.log('question key down')
-        const question_concept_sequence = _find_concept_sequence(question['Sequence'])
 
         if (event.keyCode === 13) {
             _question_answer_enter(event, question)
@@ -617,8 +747,6 @@ function Notes(props) {
 
     function handleAnswerKeyDown(event, answer) {
         console.log('answer key down')
-        // TODO want to replicate most of the code in the above method for questions,
-        // TODO take it out and put into a helper method probably
 
         if (event.keyCode === 13) {
             _question_answer_enter(event, answer)
@@ -626,7 +754,42 @@ function Notes(props) {
     }
 
     function newFirstConcept(event) {
-        console.log('new first concept')
+        // if 0 concepts, create concept, note, question, answer
+        if (concepts.length === 0) {
+            // find section/subsection index in props.classes
+            var section_index = 0;
+            var subsection_index = 0;
+            for (var i = 0; i < props.classes.length; i++) {
+                const current_class = props.classes[i]
+                if (current_class['Name'] === props.classname) {
+                    const sections = Object.keys(current_class['Sections_dict']);
+                    for (var j = 0; j < sections.length; j++) {
+                        const current_section = sections[j]
+                        if (current_section === props.sectionname) {
+                            section_index = j;
+                            const subsections = current_class['Sections_dict'][current_section];
+                            for (var k = 0; k < subsections.length; k++) {
+                                const current_subsection = subsections[k]
+                                if (current_subsection === props.subsectionname) {
+                                    subsection_index = k;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            const concept_sequence = `${section_index + 1}.${subsection_index + 1}.1`
+            const new_concept = build_new_concept(concept_sequence);
+            const new_note = build_new_note(concept_sequence + '.1');
+            const new_question = build_new_question(concept_sequence + '.1');
+            const new_answer = build_new_answer(concept_sequence + '.1.1');
+            setConcepts([new_concept]);
+            setNotes([new_note]);
+            setQuestions([new_question]);
+            setAnswers([new_answer]);
+        } else {
+            console.log("Already have a concept")
+        }
     }
 
     return (
@@ -637,7 +800,7 @@ function Notes(props) {
             <br></br>
             <br></br>
 
-            {concepts.map((concept, index) => {
+            {_sort_by_sequence(concepts).map((concept, index) => {
                 return (
                     <div key={index}>
                         <Concept
