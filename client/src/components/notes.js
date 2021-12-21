@@ -139,7 +139,7 @@ function Note(props) {
     }
 
     return (
-        <div>
+        <div className={"indent" + note['Indent Level']}>
             <TextareaAutosize
                 type="text"
                 value={note['Note']}
@@ -222,7 +222,7 @@ function Question(props) {
     }
 
     return (
-        <div>
+        <div className={"indent" + question['Indent Level']}>
             <TextareaAutosize
                 type="text"
                 value={question['Question']}
@@ -267,7 +267,7 @@ function Answer(props) {
     }
 
     return (
-        <div>
+        <div className={"indent" + answer['Indent Level']}>
             <TextareaAutosize
                 type="text"
                 value={answer['Answer']}
@@ -625,31 +625,41 @@ function Notes(props) {
                 event.preventDefault()
                 note['Latex'] = !note['Latex']
                 note['Changed'] = true
-                var new_notes = [];
-                for (var i = 0; i < notes.length; i++) {
-                    const current_note = notes[i]
-                    if (current_note['Sequence'] === note['Sequence']) {
-                        new_notes.push(note)
-                    } else {
-                        new_notes.push(current_note)
-                    }
-                }
-                setNotes(new_notes)
             } else if (event.keyCode === 39) {
                 console.log('shift right')
                 event.preventDefault()
+                var indent_int = parseInt(note['Indent Level']);
+                indent_int++;
+                var new_indent_str = Math.min(6, indent_int).toString();
+                note['Indent Level'] = new_indent_str;
+                note['Changed'] = true
             } else if (event.keyCode === 37) {
                 console.log('shift left')
                 event.preventDefault()
+                var sl_indent_int = parseInt(note['Indent Level']);
+                sl_indent_int--;
+                var sl_new_indent_str = Math.max(0, sl_indent_int).toString();
+                note['Indent Level'] = sl_new_indent_str;
+                note['Changed'] = true
             }
+            var new_notes = [];
+            for (var i = 0; i < notes.length; i++) {
+                const current_note = notes[i]
+                if (current_note['Sequence'] === note['Sequence']) {
+                    new_notes.push(note)
+                } else {
+                    new_notes.push(current_note)
+                }
+            }
+            setNotes(new_notes)
         } else if (event.keyCode === 13) {
             console.log('new note')
             event.preventDefault()
             // * find notes inside and outside the current concept
             var concept_notes = [];
             var non_concept_notes = [];
-            for (var i = 0; i < notes.length; i++) {
-                const current_note = notes[i];
+            for (var j = 0; j < notes.length; j++) {
+                const current_note = notes[j];
                 const current_note_concept_sequence = _find_concept_sequence(current_note['Sequence'])
                 if (current_note_concept_sequence === note_concept_sequence) {
                     concept_notes.push(current_note);
@@ -660,8 +670,8 @@ function Notes(props) {
             // * loop through concept notes, updating the sequences
             var new_concept_notes = [];
             const note_sequence_val = _find_last_sequence_val(note['Sequence'])
-            for (var j = 0; j < concept_notes.length; j++) {
-                const concept_note = concept_notes[j];
+            for (var k = 0; k < concept_notes.length; k++) {
+                const concept_note = concept_notes[k];
                 const concept_note_sequence_val = _find_last_sequence_val(concept_note['Sequence'])
                 if (concept_note_sequence_val > note_sequence_val) {
                     concept_note['Sequence'] = note_concept_sequence + `.${concept_note_sequence_val + 1}`
@@ -768,20 +778,40 @@ function Notes(props) {
             _question_answer_enter(event, question)
         }
 
-        if (event.ctrlKey && event.keyCode == 76) {
-            // * LATEX
-            event.preventDefault()
-            question['Latex'] = !question['Latex']
-            question['Changed'] = true
+        if (event.ctrlKey) {
+            if (event.keyCode === 76) {
+                // * LATEX
+                event.preventDefault()
+                question['Latex'] = !question['Latex']
+                question['Changed'] = true
+            } else if (event.keyCode === 39) {
+                console.log('shift right')
+                event.preventDefault()
+                var indent_int = parseInt(question['Indent Level']);
+                indent_int++;
+                var new_indent_str = Math.min(6, indent_int).toString();
+                question['Indent Level'] = new_indent_str
+                question['Changed'] = true
+            } else if (event.keyCode === 37) {
+                console.log('shift left')
+                event.preventDefault()
+                var sl_indent_int = parseInt(question['Indent Level']);
+                sl_indent_int--;
+                var sl_new_indent_str = Math.max(0, sl_indent_int).toString();
+                question['Indent Level'] = sl_new_indent_str
+                question['Changed'] = true
+            }
             var new_questions = [];
             for (var i = 0; i < questions.length; i++) {
                 const current_question = questions[i]
                 if (current_question['Sequence'] === question['Sequence']) {
                     new_questions.push(question)
+                    console.log(question)
                 } else {
                     new_questions.push(current_question)
                 }
             }
+            setQuestions([])
             setQuestions(new_questions)
         }
     }
@@ -792,11 +822,29 @@ function Notes(props) {
         if (event.keyCode === 13) {
             _question_answer_enter(event, answer)
         }
-        if (event.ctrlKey && event.keyCode == 76) {
-            // * LATEX
-            event.preventDefault()
-            answer['Latex'] = !answer['Latex']
-            answer['Changed'] = true
+        if (event.ctrlKey) {
+            if (event.keyCode === 76) {
+                // * LATEX
+                event.preventDefault()
+                answer['Latex'] = !answer['Latex']
+                answer['Changed'] = true
+            } else if (event.keyCode === 39) {
+                console.log('shift right')
+                event.preventDefault()
+                var indent_int = parseInt(answer['Indent Level']);
+                indent_int++;
+                var new_indent_str = Math.min(6, indent_int).toString();
+                answer['Indent Level'] = new_indent_str
+                answer['Changed'] = true
+            } else if (event.keyCode === 37) {
+                console.log('shift left')
+                event.preventDefault()
+                var sl_indent_int = parseInt(answer['Indent Level']);
+                sl_indent_int--;
+                var sl_new_indent_str = Math.max(0, sl_indent_int).toString();
+                answer['Indent Level'] = sl_new_indent_str
+                answer['Changed'] = true
+            }
             var new_answers = [];
             for (var i = 0; i < answers.length; i++) {
                 const current_answer = answers[i]
@@ -875,8 +923,8 @@ function Notes(props) {
                 setNotes(new_notes);
             } else if (document['type'] === 'Question') {
                 var new_questions = [];
-                for (var i = 0; i < questions.length; i++) {
-                    var current_question = questions[i];
+                for (var j = 0; j < questions.length; j++) {
+                    var current_question = questions[j];
                     if (current_question["_id"]["$oid"] === document["_id"]["$oid"]) {
                         current_question['Image'] = res['location'];
                         current_question['Changed'] = true;
@@ -886,8 +934,8 @@ function Notes(props) {
                 setQuestions(new_questions);
             } else if (document['type'] === 'Answer') {
                 var new_answers = [];
-                for (var i = 0; i < answers.length; i++) {
-                    var current_answer = answers[i];
+                for (var k = 0; k < answers.length; k++) {
+                    var current_answer = answers[k];
                     if (current_answer["_id"]["$oid"] === document["_id"]["$oid"]) {
                         current_answer['Image'] = res['location'];
                         current_answer['Changed'] = true;

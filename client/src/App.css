@@ -117,3 +117,27 @@
   max-width: 90%;
   max-height: 350px;
 }
+
+.indent1 {
+  margin-left: 0px;
+}
+
+.indent2 {
+  margin-left: 50px;
+}
+
+.indent3 {
+  margin-left: 100px;
+}
+
+.indent4 {
+  margin-left: 150px;
+}
+
+.indent5 {
+  margin-left: 200px;
+}
+
+.indent6 {
+  margin-left: 250px;
+}
