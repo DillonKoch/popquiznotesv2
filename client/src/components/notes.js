@@ -25,36 +25,41 @@ import S3 from 'react-aws-s3'
 var crypto = require('crypto');
 
 function _increment_concept(sequence) {
+    // * adding 1 to the concept value (third) in a sequence
     const sequence_vals = sequence.split('.')
     sequence_vals[2]++
     console.log(sequence, sequence_vals.join('.'))
     return sequence_vals.join('.')
-
 }
 
 function _find_concept_sequence(sequence) {
+    // * returning the sequence of just the concept, not other values after the third
     const sequence_vals = sequence.split('.').slice(0, 3);
     const concept_sequence = sequence_vals.join('.')
     return concept_sequence
 }
 
 function _find_question_sequence(sequence) {
+    // * returning the sequence of just the question, not other values after the fourth
     const sequence_vals = sequence.split('.').slice(0, 4);
     const question_sequence = sequence_vals.join('.')
     return question_sequence
 }
 
 function _find_last_sequence_val(sequence) {
+    // * finding the integer of the last value in the sequence
     const sequence_vals = sequence.split('.')
     return parseInt(sequence_vals.slice(-1)[0]);
 }
 
 function _find_concept_val(sequence) {
+    // * finding the value of the concept in a sequence (third)
     const sequence_vals = sequence.split('.')
     return sequence_vals[2]
 }
 
 function _sort_by_sequence(arr) {
+    // * sorting an array of objects by the 'Sequence' in each object
     arr.sort(function (a, b) {
         var keyA = a['Sequence'],
             keyB = b['Sequence'];
@@ -898,9 +903,8 @@ function Notes(props) {
     }
 
     function uploadImage(event, document) {  // Top Level
-        //  TODO need to update questions/answers here too, not just notes
         // * * * uploads an image to AWS S3
-        const filename = `${props.class_name}-${props.section_name}-${props.subsection_name}-${document['_id']['$oid']}`;
+        const filename = `${props.classname}-${props.sectionname}-${props.subsectionname}-${document['_id']['$oid']}`;
         const config = {
             bucketName: 'popquiznotes',
             dirName: 'dkoch',
