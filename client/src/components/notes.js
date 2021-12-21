@@ -18,14 +18,11 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { InlineMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 import "../App.css";
+import S3 from 'react-aws-s3'
 var crypto = require('crypto');
-
-// function _find_section_subsection_sequence(sequence) {
-//     const sequence_vals = sequence.split('.').slice(0, 2);
-//     const section_subsection_sequence = sequence_vals.join('.')
-//     return section_subsection_sequence
-// }
 
 function _increment_concept(sequence) {
     const sequence_vals = sequence.split('.')
@@ -106,9 +103,17 @@ function Concept(props) {
     )
 }
 
+function Katex(props) {
+    return (
+        <div className="katex">
+            <InlineMath math={String(props.text)} />
+        </div>
+    )
+}
 
 function Note(props) {
     const [note, setNote] = useState(props.note);
+    const [showupload, setShowupload] = useState(false);
 
     useEffect(() => {
         setNote([])
@@ -127,6 +132,10 @@ function Note(props) {
 
     function handleNoteKeyDown(event) {
         props.handleKeyDown(event, note)
+
+        if (event.ctrlKey && event.keyCode === 73) {
+            setShowupload(!showupload)
+        }
     }
 
     return (
@@ -139,6 +148,10 @@ function Note(props) {
                 onChange={(event) => handleChange(event)}
                 onKeyDown={(event) => handleNoteKeyDown(event)}
             />
+            {props.note['Latex'] === true ? <Katex text={note['Note']} /> : null}
+            {props.note['Image'] === "" ? null : <img src={props.note['Image']} alt="" className="img"></img>}
+            {((props.note['Image'] === "") & showupload) ?
+                <input type="file" onChange={(event) => props.uploadImage(event, props.note)}></input> : null}
         </div>
     )
 }
@@ -155,14 +168,6 @@ function NotesSection(props) {
                 new_concept_notes.push(props.notes[i]);
             }
         }
-        // new_concept_notes.sort(function (a, b) {
-        //     var keyA = a['Sequence'],
-        //         keyB = b['Sequence'];
-        //     // Compare the 2 sequences
-        //     if (keyA < keyB) return -1;
-        //     if (keyA > keyB) return 1;
-        //     return 0;
-        // })
         new_concept_notes = _sort_by_sequence(new_concept_notes)
         setConceptnotes([])
         console.log(new_concept_notes)
@@ -178,6 +183,7 @@ function NotesSection(props) {
                             note={conceptnote}
                             handleChange={props.handleChange}
                             handleKeyDown={props.handleKeyDown}
+                            uploadImage={props.uploadImage}
                         />
                     </div>
                 )
@@ -188,6 +194,7 @@ function NotesSection(props) {
 
 function Question(props) {
     const [question, setQuestion] = useState(props.question);
+    const [showupload, setShowupload] = useState(false);
 
     useEffect(() => {
         setQuestion([])
@@ -207,6 +214,11 @@ function Question(props) {
     function handleKeyDown(event) {
         console.log('question key down')
         props.handleKeyDown(event, question)
+
+        if (event.ctrlKey && event.keyCode === 73) {
+            setShowupload(!showupload)
+            console.log('show upload')
+        }
     }
 
     return (
@@ -219,12 +231,17 @@ function Question(props) {
                 onChange={(event) => handleChange(event)}
                 onKeyDown={(event) => handleKeyDown(event)}
             />
+            {question['Latex'] === true ? <Katex text={question['Question']} /> : null}
+            {question['Image'] === "" ? null : <img src={question['Image']} alt="" className="img"></img>}
+            {((question['Image'] === "") & showupload) ?
+                <input type="file" onChange={(event) => props.uploadImage(event, question)}></input> : null}
         </div>
     )
 }
 
 function Answer(props) {
     const [answer, setAnswer] = useState(props.answer);
+    const [showupload, setShowupload] = useState(false);
 
     useEffect(() => {
         setAnswer([])
@@ -242,8 +259,11 @@ function Answer(props) {
     }
 
     function handleKeyDown(event) {
-        console.log('answer key down')
         props.handleKeyDown(event, answer)
+
+        if (event.ctrlKey && event.keyCode === 73) {
+            setShowupload(!showupload)
+        }
     }
 
     return (
@@ -256,6 +276,10 @@ function Answer(props) {
                 onChange={(event) => handleChange(event)}
                 onKeyDown={(event) => handleKeyDown(event)}
             />
+            {answer['Latex'] === true ? <Katex text={answer['Answer']} /> : null}
+            {props.answer['Image'] === "" ? null : <img src={props.answer['Image']} alt="" className="img"></img>}
+            {((props.answer['Image'] === "") & showupload) ?
+                <input type="file" onChange={(event) => props.uploadImage(event, props.answer)}></input> : null}
         </div>
     )
 }
@@ -273,14 +297,6 @@ function AnswerSection(props) {
                 new_question_answers.push(props.answers[i]);
             }
         }
-        // new_question_answers.sort(function (a, b) {
-        //     var keyA = a['Sequence'],
-        //         keyB = b['Sequence'];
-        //     // Compare the 2 sequences
-        //     if (keyA < keyB) return -1;
-        //     if (keyA > keyB) return 1;
-        //     return 0;
-        // })
         new_question_answers = _sort_by_sequence(new_question_answers)
         setQuestionanswers([]);
         setQuestionanswers(new_question_answers);
@@ -296,6 +312,7 @@ function AnswerSection(props) {
                             answer={answer}
                             handleChange={props.handleChange}
                             handleKeyDown={props.handleKeyDown}
+                            uploadImage={props.uploadImage}
                         />
                     </div>
                 )
@@ -320,14 +337,6 @@ function QuestionAnswers(props) {
                 current_concept_questions.push(question);
             }
         }
-        // current_concept_questions.sort(function (a, b) {
-        //     var keyA = a['Sequence'],
-        //         keyB = b['Sequence'];
-        //     // Compare the 2 sequences
-        //     if (keyA < keyB) return -1;
-        //     if (keyA > keyB) return 1;
-        //     return 0;
-        // })
         current_concept_questions = _sort_by_sequence(current_concept_questions)
         setConceptquestions([])
         setConceptquestions(current_concept_questions);
@@ -358,6 +367,7 @@ function QuestionAnswers(props) {
                             question={question}
                             handleChange={props.handleQuestionChange}
                             handleKeyDown={props.handleQuestionKeyDown}
+                            uploadImage={props.uploadImage}
                         />
                         <AnswerSection
                             key={index + 'a'}
@@ -365,6 +375,7 @@ function QuestionAnswers(props) {
                             answers={conceptanswers}
                             handleChange={props.handleAnswerChange}
                             handleKeyDown={props.handleAnswerKeyDown}
+                            uploadImage={props.uploadImage}
                         />
                     </div>
                 )
@@ -609,8 +620,21 @@ function Notes(props) {
 
         if (event.ctrlKey) {
             if (event.keyCode === 76) {
+                // * LATEX
                 console.log('latex')
                 event.preventDefault()
+                note['Latex'] = !note['Latex']
+                note['Changed'] = true
+                var new_notes = [];
+                for (var i = 0; i < notes.length; i++) {
+                    const current_note = notes[i]
+                    if (current_note['Sequence'] === note['Sequence']) {
+                        new_notes.push(note)
+                    } else {
+                        new_notes.push(current_note)
+                    }
+                }
+                setNotes(new_notes)
             } else if (event.keyCode === 39) {
                 console.log('shift right')
                 event.preventDefault()
@@ -636,8 +660,8 @@ function Notes(props) {
             // * loop through concept notes, updating the sequences
             var new_concept_notes = [];
             const note_sequence_val = _find_last_sequence_val(note['Sequence'])
-            for (var i = 0; i < concept_notes.length; i++) {
-                const concept_note = concept_notes[i];
+            for (var j = 0; j < concept_notes.length; j++) {
+                const concept_note = concept_notes[j];
                 const concept_note_sequence_val = _find_last_sequence_val(concept_note['Sequence'])
                 if (concept_note_sequence_val > note_sequence_val) {
                     concept_note['Sequence'] = note_concept_sequence + `.${concept_note_sequence_val + 1}`
@@ -678,8 +702,8 @@ function Notes(props) {
         // ! answers
         var concept_answers = [];
         var non_concept_answers = [];
-        for (var i = 0; i < answers.length; i++) {
-            const current_answer = answers[i];
+        for (var j = 0; j < answers.length; j++) {
+            const current_answer = answers[j];
             const current_answer_concept_sequence = _find_concept_sequence(current_answer['Sequence'])
             if (current_answer_concept_sequence === question_concept_sequence) {
                 concept_answers.push(current_answer);
@@ -692,8 +716,8 @@ function Notes(props) {
         // ! questions
         var new_concept_questions = [];
         const question_sequence_val = _find_last_sequence_val(question_answer['Sequence'])
-        for (var i = 0; i < concept_questions.length; i++) {
-            const concept_question = concept_questions[i];
+        for (var k = 0; k < concept_questions.length; k++) {
+            const concept_question = concept_questions[k];
             const concept_question_sequence_val = _find_last_sequence_val(concept_question['Sequence'])
             if (concept_question_sequence_val > question_sequence_val) {
                 concept_question['Sequence'] = question_concept_sequence + `.${concept_question_sequence_val + 1}`
@@ -704,8 +728,8 @@ function Notes(props) {
 
         // ! answers
         var new_concept_answers = [];
-        for (var i = 0; i < concept_answers.length; i++) {
-            const concept_answer = concept_answers[i];
+        for (var l = 0; l < concept_answers.length; l++) {
+            const concept_answer = concept_answers[l];
             const concept_answer_sequence_val = _find_last_sequence_val(concept_answer['Sequence'])
             if (concept_answer_sequence_val > question_sequence_val) {
                 concept_answer['Sequence'] = question_concept_sequence + `.${concept_answer_sequence_val + 1}`
@@ -743,6 +767,23 @@ function Notes(props) {
         if (event.keyCode === 13) {
             _question_answer_enter(event, question)
         }
+
+        if (event.ctrlKey && event.keyCode == 76) {
+            // * LATEX
+            event.preventDefault()
+            question['Latex'] = !question['Latex']
+            question['Changed'] = true
+            var new_questions = [];
+            for (var i = 0; i < questions.length; i++) {
+                const current_question = questions[i]
+                if (current_question['Sequence'] === question['Sequence']) {
+                    new_questions.push(question)
+                } else {
+                    new_questions.push(current_question)
+                }
+            }
+            setQuestions(new_questions)
+        }
     }
 
     function handleAnswerKeyDown(event, answer) {
@@ -750,6 +791,22 @@ function Notes(props) {
 
         if (event.keyCode === 13) {
             _question_answer_enter(event, answer)
+        }
+        if (event.ctrlKey && event.keyCode == 76) {
+            // * LATEX
+            event.preventDefault()
+            answer['Latex'] = !answer['Latex']
+            answer['Changed'] = true
+            var new_answers = [];
+            for (var i = 0; i < answers.length; i++) {
+                const current_answer = answers[i]
+                if (current_answer['Sequence'] === answer['Sequence']) {
+                    new_answers.push(answer)
+                } else {
+                    new_answers.push(current_answer)
+                }
+            }
+            setAnswers(new_answers)
         }
     }
 
@@ -792,11 +849,73 @@ function Notes(props) {
         }
     }
 
+    function uploadImage(event, document) {  // Top Level
+        //  TODO need to update questions/answers here too, not just notes
+        // * * * uploads an image to AWS S3
+        const filename = `${props.class_name}-${props.section_name}-${props.subsection_name}-${document['_id']['$oid']}`;
+        const config = {
+            bucketName: 'popquiznotes',
+            dirName: 'dkoch',
+            region: 'us-east-2',
+            accessKeyId: 'AKIAXJW6E2ZATCCXPVIL',
+            secretAccessKey: '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',
+        };
+        const ReactS3Client = new S3(config);
+        ReactS3Client.uploadFile(event.target.files[0], filename).then((res) => {
+            if (document['type'] === "Note") {
+                var new_notes = [];
+                for (var i = 0; i < notes.length; i++) {
+                    var current_note = notes[i];
+                    if (current_note["_id"]["$oid"] === document["_id"]["$oid"]) {
+                        current_note['Image'] = res['location'];
+                        current_note['Changed'] = true;
+                    }
+                    new_notes.push(current_note);
+                }
+                setNotes(new_notes);
+            } else if (document['type'] === 'Question') {
+                var new_questions = [];
+                for (var i = 0; i < questions.length; i++) {
+                    var current_question = questions[i];
+                    if (current_question["_id"]["$oid"] === document["_id"]["$oid"]) {
+                        current_question['Image'] = res['location'];
+                        current_question['Changed'] = true;
+                    }
+                    new_questions.push(current_question);
+                }
+                setQuestions(new_questions);
+            } else if (document['type'] === 'Answer') {
+                var new_answers = [];
+                for (var i = 0; i < answers.length; i++) {
+                    var current_answer = answers[i];
+                    if (current_answer["_id"]["$oid"] === document["_id"]["$oid"]) {
+                        current_answer['Image'] = res['location'];
+                        current_answer['Changed'] = true;
+                    }
+                    new_answers.push(current_answer);
+                }
+                setAnswers(new_answers);
+            }
+        }).then((res) => {
+            saveDocuments(null);
+        })
+    }
+
+    function handleQuizClick(event, quizlevel) {
+        console.log('quiz click')
+        props.setShownotes(false);
+        props.setQuizlevel(quizlevel)
+    }
+
     return (
         <div className="notes">
             <h1>{props.classname} - {props.sectionname} - {props.subsectionname}</h1>
             <button onClick={(event) => saveDocuments(event)}>Save</button>
             <button onClick={(event) => newFirstConcept(event)}>New First Concept</button>
+            <button onClick={(event) => handleQuizClick(event, 3)}>Quiz Everything</button>
+            <button onClick={(event) => handleQuizClick(event, 2)}>Quiz Class</button>
+            <button onClick={(event) => handleQuizClick(event, 1)}>Quiz Section</button>
+            <button onClick={(event) => handleQuizClick(event, 0)}>Quiz Subsection</button>
             <br></br>
             <br></br>
 
@@ -815,6 +934,7 @@ function Notes(props) {
                             notes={notes}
                             handleChange={handleNoteChange}
                             handleKeyDown={handleNoteKeyDown}
+                            uploadImage={uploadImage}
                         />
                         <QuestionAnswers
                             key={index + 'qa'}
@@ -825,6 +945,7 @@ function Notes(props) {
                             handleAnswerChange={handleAnswerChange}
                             handleQuestionKeyDown={handleQuestionKeyDown}
                             handleAnswerKeyDown={handleAnswerKeyDown}
+                            uploadImage={uploadImage}
                         />
                     </div>
                 )

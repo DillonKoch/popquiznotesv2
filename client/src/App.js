@@ -16,12 +16,14 @@
 
 import React, { useEffect, useState } from 'react';
 import Sidebar from "./components/sidebar";
-// import Header from "./components/header";
+import Quiz from "./components/quiz"
 import Notes from "./components/notes";
 import axios from 'axios';
 
 
 function App() {
+	const [shownotes, setShownotes] = useState(true);
+	const [quizlevel, setQuizlevel] = useState(0);  // 0 = subsection, 1 = section, 2 = class, 3 = everything
 	const [classes, setClasses] = useState([]);
 	const [classname, setClassname] = useState("STAT 110");
 	const [sectionname, setSectionname] = useState("Ch 1 Probability and Counting");
@@ -50,13 +52,21 @@ function App() {
 	return (
 		<div>
 			<Sidebar classes={classes} handleSubsectionClick={handleSubsectionClick} />
-			{/* // TODO add the if __ show notes, otherwise show quiz thing here eventually */}
-			<Notes
-				classes={classes}
-				classname={classname}
-				sectionname={sectionname}
-				subsectionname={subsectionname}
-			/>
+
+			{shownotes ?
+				<Notes
+					classes={classes}
+					classname={classname}
+					sectionname={sectionname}
+					subsectionname={subsectionname}
+					setShownotes={setShownotes}
+					setQuizlevel={setQuizlevel}
+				/> :
+				<Quiz
+					quizlevel={quizlevel}
+					setShownotes={setShownotes}
+				/>
+			}
 		</div>
 	)
 }
