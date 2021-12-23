@@ -713,7 +713,27 @@ function Notes(props) {
             console.log(all_new_notes)
             setNotes([])
             setNotes(all_new_notes)
+        } else if (event.keyCode === 8 && note['Note'].length === 0) {
+            // * deleting a note
+            console.log('delete')
+            var new_notes2 = [];
+            for (var l = 0; l < notes.length; l++) {
+                const current_note = notes[l]
+                if (current_note['_id']['$oid'] === note['_id']['$oid']) {
+                    console.log('mongodb func')
+                    const url_base_string = "https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Delete_Note";
+                    const class_url_string = `?class=${props.classname}`
+                    var url = url_base_string + class_url_string.replace(/ /g, '%20');
+                    axios.put(url, note).then((res) => {
+                        console.log(res.data)
+                    })
+                } else {
+                    new_notes2.push(current_note)
+                }
+            }
+            setNotes(new_notes2);
         }
+
     }
 
     function _question_answer_enter(event, question_answer) {
@@ -846,15 +866,17 @@ function Notes(props) {
 
         if (event.keyCode === 13) {
             // * just adding a new answer to below the current one
+            console.log('enter')
+            event.preventDefault()
             var answer_sequence_val = _find_last_sequence_val(answer['Sequence'])
             var question_sequence = _find_question_sequence(answer['Sequence'])
             var new_answer_sequence = `${question_sequence}.${answer_sequence_val + 1}`
             var new_answer = build_new_answer(new_answer_sequence)
             answers.push(new_answer)
-            setAnswers([])
-            setAnswers(answers)
+            setAnswers([...answers])
         } else if (event.keyCode === 8 && answer['Answer'].length === 0) {
             console.log('delete')
+            event.preventDefault()
             const delete_id = answer['_id']['$oid']
             var new_answers = [];
             for (var i = 0; i < answers.length; i++) {
