@@ -821,6 +821,62 @@ function Notes(props) {
 
         if (event.keyCode === 13) {
             _question_answer_enter(event, question)
+        } else if (event.keyCode === 8 && question['Question'].length === 0) {
+            console.log('delete?')
+            // delete a question if there are other questions, and its length is 0
+            // get the concept sequence
+            // count the number of questions in the concept, if more than 1, delete
+            var num_questions = 0;
+            var question_concept_sequence = _find_concept_sequence(question['Sequence']);
+            for (var i = 0; i < questions.length; i++) {
+                const current_question = questions[i];
+                const current_question_concept_sequence = _find_concept_sequence(current_question['Sequence'])
+                if (current_question_concept_sequence === question_concept_sequence) {
+                    num_questions++;
+                }
+            }
+            if (num_questions > 1) {
+                console.log('DELETE')
+                // * deleting the question itself
+                const url_base_string = "https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Delete_Note";
+                const class_url_string = `?class=${props.classname}`
+                var url = url_base_string + class_url_string.replace(/ /g, '%20');
+                axios.put(url, question).then((res) => {
+                    console.log(res.data)
+                })
+                var new_questions = [];
+                for (var i = 0; i < questions.length; i++) {
+                    if (questions[i].Sequence !== question.Sequence) {
+                        new_questions.push(questions[i])
+                    }
+                }
+                setQuestions(new_questions)
+                // * finding and deleting all answers to this question
+                var delete_answers = [];
+                for (var j = 0; j < answers.length; j++) {
+                    const current_answer = answers[j];
+                    const current_answer_question_sequence = _find_question_sequence(current_answer['Sequence'])
+                    if (current_answer_question_sequence === question['Sequence']) {
+                        delete_answers.push(current_answer)
+                    }
+                }
+                var new_answers = [];
+                for (var k = 0; k < answers.length; k++) {
+                    const current_answer = answers[k];
+                    if (delete_answers.includes(current_answer)) {
+                        axios.put(url, current_answer).then((res) => {
+                            console.log(res.data)
+                        })
+                        continue;
+                    }
+                    new_answers.push(current_answer)
+                }
+                setAnswers(new_answers)
+
+            } else {
+                console.log('This is the only question - not deleting')
+            }
+
         }
 
         if (event.ctrlKey) {
