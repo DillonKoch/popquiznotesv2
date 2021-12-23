@@ -845,10 +845,7 @@ function Notes(props) {
         console.log('answer key down')
 
         if (event.keyCode === 13) {
-            _question_answer_enter(event, answer)
-            // TODO just add a new answer, take out question-answer
-
-            // we have the answer and its sequence, simply make a new blank answer with sequence one higher
+            // * just adding a new answer to below the current one
             var answer_sequence_val = _find_last_sequence_val(answer['Sequence'])
             var question_sequence = _find_question_sequence(answer['Sequence'])
             var new_answer_sequence = `${question_sequence}.${answer_sequence_val + 1}`
@@ -856,7 +853,25 @@ function Notes(props) {
             answers.push(new_answer)
             setAnswers([])
             setAnswers(answers)
-
+        } else if (event.keyCode === 8 && answer['Answer'].length === 0) {
+            console.log('delete')
+            const delete_id = answer['_id']['$oid']
+            var new_answers = [];
+            for (var i = 0; i < answers.length; i++) {
+                const current_answer = answers[i]
+                if (current_answer['_id']['$oid'] !== delete_id) {
+                    new_answers.push(current_answer)
+                } else {
+                    console.log('mongodb func')
+                    const url_base_string = "https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Delete_Note";
+                    const class_url_string = `?class=${props.classname}`
+                    var url = url_base_string + class_url_string.replace(/ /g, '%20');
+                    axios.put(url, answer).then((res) => {
+                        console.log(res.data)
+                    })
+                }
+            }
+            setAnswers(new_answers)
         }
         if (event.ctrlKey) {
             if (event.keyCode === 76) {
