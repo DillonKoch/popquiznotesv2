@@ -635,7 +635,71 @@ function Notes(props) {
             console.log('notes', new_notes)
             console.log('questions', new_questions)
             console.log('answers', new_answers)
+        } else if (event.keyCode === 8 && concept['Concept Name'].length === 0) {
+            console.log('delete concept?')
+            // * delete the concept
+            const url_base_string = "https://data.mongodb-api.com/app/popquiznotesv2-0-app-hhapj/endpoint/Delete_Note";
+            const class_url_string = `?class=${props.classname}`
+            var url = url_base_string + class_url_string.replace(/ /g, '%20');
+            var new_concepts = [];
+            for (var i = 0; i < concepts.length; i++) {
+                const current_concept = concepts[i]
+                if (current_concept['Sequence'] === concept['Sequence']) {
+                    axios.put(url, current_concept).then((res) => {
+                        console.log(res.data)
+                    })
+                } else {
+                    new_concepts.push(current_concept)
+                }
+            }
+            setConcepts(new_concepts);
+            // * find notes that belong to it, delete those
+            const concept_sequence = concept['Sequence']
+            var new_notes = [];
+            for (var j = 0; j < notes.length; j++) {
+                const current_note = notes[j]
+                const current_note_concept_sequence = _find_concept_sequence(current_note['Sequence'])
+                if (current_note_concept_sequence === concept_sequence) {
+                    axios.put(url, current_note).then((res) => {
+                        console.log(res.data)
+                    })
+                } else {
+                    new_notes.push(current_note)
+                }
+            }
+            setNotes(new_notes);
+            // * find questions that belong to it, delete those
+            var new_questions = [];
+            for (var i = 0; i < questions.length; i++) {
+                const question = questions[i];
+                const question_concept_sequence = _find_concept_sequence(question['Sequence'])
+                if (question_concept_sequence !== concept_sequence) {
+                    new_questions.push(question)
+                } else {
+                    console.log('delete question')
+                    axios.put(url, question).then((res) => {
+                        console.log(res.data)
+                    })
+                }
+            }
+            setQuestions(new_questions);
+            // * find answers that belong to it, delete those
+            var new_answers = [];
+            for (var i = 0; i < answers.length; i++) {
+                const answer = answers[i];
+                const answer_concept_sequence = _find_concept_sequence(answer['Sequence'])
+                if (answer_concept_sequence !== concept_sequence) {
+                    new_answers.push(answer)
+                } else {
+                    console.log('delete answer')
+                    axios.put(url, answer).then((res) => {
+                        console.log(res.data)
+                    })
+                }
+            }
+            setAnswers(new_answers);
         }
+
     }
 
     function handleNoteKeyDown(event, note) {
