@@ -71,6 +71,26 @@ function _sort_by_sequence(arr) {
     return arr
 }
 
+function _find_sequence_val(sequence, index) {
+    // * finding the integer of the index in the sequence
+    const sequence_vals = sequence.split('.')
+    return parseInt(sequence_vals[index])
+}
+
+function _sort_by_sequence_val(arr, val) {
+    // * sorting an array of objects by the 'Sequence' in each object
+    // * sorting by the integer of the 'val' (question val, answer val, etc)
+    arr.sort(function (a, b) {
+        var keyA = _find_sequence_val(a['Sequence'], val),
+            keyB = _find_sequence_val(b['Sequence'], val);
+        // Compare the 2 sequences
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+    })
+    return arr;
+}
+
 
 function Concept(props) {
     const [concept, setConcept] = useState(props.concept)
@@ -173,7 +193,7 @@ function NotesSection(props) {
                 new_concept_notes.push(props.notes[i]);
             }
         }
-        new_concept_notes = _sort_by_sequence(new_concept_notes)
+        new_concept_notes = _sort_by_sequence_val(new_concept_notes, 3)
         setConceptnotes([])
         console.log(new_concept_notes)
         setConceptnotes(new_concept_notes)
@@ -302,7 +322,7 @@ function AnswerSection(props) {
                 new_question_answers.push(props.answers[i]);
             }
         }
-        new_question_answers = _sort_by_sequence(new_question_answers)
+        new_question_answers = _sort_by_sequence_val(new_question_answers, 4)
         setQuestionanswers([]);
         setQuestionanswers(new_question_answers);
     }, [props.answers, props.question])
@@ -342,7 +362,7 @@ function QuestionAnswers(props) {
                 current_concept_questions.push(question);
             }
         }
-        current_concept_questions = _sort_by_sequence(current_concept_questions)
+        current_concept_questions = _sort_by_sequence_val(current_concept_questions, 3)
         setConceptquestions([])
         setConceptquestions(current_concept_questions);
 
@@ -602,10 +622,10 @@ function Notes(props) {
             new_questions.push(new_question)
             new_answers.push(new_answer)
 
-            new_concepts = _sort_by_sequence(new_concepts)
-            new_notes = _sort_by_sequence(new_notes)
-            new_questions = _sort_by_sequence(new_questions)
-            new_answers = _sort_by_sequence(new_answers)
+            new_concepts = _sort_by_sequence_val(new_concepts, 2)
+            new_notes = _sort_by_sequence_val(new_notes, 3)
+            new_questions = _sort_by_sequence_val(new_questions, 3)
+            new_answers = _sort_by_sequence_val(new_answers, 4)
 
             setConcepts(new_concepts)
             setNotes(new_notes)
@@ -826,6 +846,17 @@ function Notes(props) {
 
         if (event.keyCode === 13) {
             _question_answer_enter(event, answer)
+            // TODO just add a new answer, take out question-answer
+
+            // we have the answer and its sequence, simply make a new blank answer with sequence one higher
+            var answer_sequence_val = _find_last_sequence_val(answer['Sequence'])
+            var question_sequence = _find_question_sequence(answer['Sequence'])
+            var new_answer_sequence = `${question_sequence}.${answer_sequence_val + 1}`
+            var new_answer = build_new_answer(new_answer_sequence)
+            answers.push(new_answer)
+            setAnswers([])
+            setAnswers(answers)
+
         }
         if (event.ctrlKey) {
             if (event.keyCode === 76) {
@@ -971,7 +1002,7 @@ function Notes(props) {
             <br></br>
             <br></br>
 
-            {_sort_by_sequence(concepts).map((concept, index) => {
+            {_sort_by_sequence_val(concepts, 2).map((concept, index) => {
                 return (
                     <div key={index}>
                         <Concept
