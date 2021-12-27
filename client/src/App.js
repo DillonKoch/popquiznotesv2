@@ -23,7 +23,7 @@ import axios from 'axios';
 
 function App() {
 	const [shownotes, setShownotes] = useState(true);
-	const [quizlevel, setQuizlevel] = useState(0);  // 0 = subsection, 1 = section, 2 = class, 3 = everything
+	const [quizcontent, setQuizcontent] = useState(0);  // 0 = subsection, 1 = section, 2 = class, 3 = everything
 	const [classes, setClasses] = useState([]);
 	const [classname, setClassname] = useState("STAT 110");
 	const [sectionname, setSectionname] = useState("Ch 1 Probability and Counting");
@@ -60,10 +60,13 @@ function App() {
 					sectionname={sectionname}
 					subsectionname={subsectionname}
 					setShownotes={setShownotes}
-					setQuizlevel={setQuizlevel}
+					setQuizcontent={setQuizcontent}
 				/> :
 				<Quiz
-					quizlevel={quizlevel}
+					quizcontent={quizcontent}
+					classname={classname}
+					sectionname={sectionname}
+					subsectionname={subsectionname}
 					setShownotes={setShownotes}
 				/>
 			}

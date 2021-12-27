@@ -149,3 +149,25 @@
 .indent6 {
   margin-left: 250px;
 }
+
+/* ! QUIZ STUFF */
+
+.quiz {
+  margin-bottom: 200px;
+}
+
+.quiz h1 {
+  font-size: 26px;
+}
+
+.quiz h2 {
+  color: gray;
+}
+
+.quizanswer p {
+  font-size: 18px;
+}
+
+.katexanswer {
+  font-size: 22px;
+}

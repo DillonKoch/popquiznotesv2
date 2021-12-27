@@ -1144,7 +1144,7 @@ function Notes(props) {
     function handleQuizClick(event, quizlevel) {
         console.log('quiz click')
         props.setShownotes(false);
-        props.setQuizlevel(quizlevel)
+        props.setQuizcontent(quizlevel.toString())
     }
 
     return (
@@ -1152,7 +1152,6 @@ function Notes(props) {
             <h1>{props.classname} - {props.sectionname} - {props.subsectionname}</h1>
             <button onClick={(event) => saveDocuments(event)}>Save</button>
             <button onClick={(event) => newFirstConcept(event)}>New First Concept</button>
-            <button onClick={(event) => handleQuizClick(event, 3)}>Quiz Everything</button>
             <button onClick={(event) => handleQuizClick(event, 2)}>Quiz Class</button>
             <button onClick={(event) => handleQuizClick(event, 1)}>Quiz Section</button>
             <button onClick={(event) => handleQuizClick(event, 0)}>Quiz Subsection</button>
