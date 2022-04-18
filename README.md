@@ -12,25 +12,25 @@ Sentence Summary
 [1. Motivation](#1-motivation)\
 [2. Popquiznotes Approach](#2-popquiznotes-approach)\
 [3. Design](#3-design)\
-[4. Looking Ahead](#4-looking-ahead)
+[4. Phase 2](#4-phase-2)
 
 
 <a name="motivation"></a>
 
 ## [1. Motivation](#1-motivation)
 
-<!-- taking notes makes sense at the time, but not later -->
 
-### The Problem With Classic Studying Methods
 The purpose of this project is to create a more efficient way to study.
 
 Normally, students take notes during their classes and only review them when they need to, usually before a test.
 The problem is, studying notes is not very useful.
 
 People learn and retain knowledge much better when they're forced to recall the information without any help.
-Ambitious students may get around this by making a practice test for themselves, but that's very time-consuming.
+Ambitious students may get around this by making a study guide or practice test for themselves, but that's very time-consuming.
 
-### Improvements Needed
+It would be much better if a student could take notes on something and immediately be given a popquiz on their notes.
+
+<!-- taking notes makes sense at the time, but not later -->
 
 <!-- notes are not immediately ready to be studied - you need to make a study guide of some kind -->
 
@@ -44,8 +44,14 @@ Ambitious students may get around this by making a practice test for themselves,
 <a name="popquiznotes-approach"></a>
 
 ## [2. Popquiznotes Approach](#2-popquiznotes-approach)
-blah blah
 
+Popquiznotes aims to eliminate this problem by creating a quiz at the same time a student takes notes.
+
+As a student takes notes, they are also able to write a question like this:
+
+<!-- IMAGE OF A QUESTION-ANSWER -->
+
+This way, when the student is finished taking notes, they can instantly be quizzed on them.
 
 <a name="design"></a>
 
@@ -59,7 +65,7 @@ blah blah
 
 <a name="looking-ahead"></a>
 
-## [4. Looking Ahead](#4-looking-ahead)
+## [4. Phase 2](#4-phase-2)
 blah blah
 
 <!-- obvious frontend improvements (less clunky, more features) -->
