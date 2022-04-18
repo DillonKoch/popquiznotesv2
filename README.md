@@ -50,6 +50,9 @@ Popquiznotes aims to eliminate this problem by creating a quiz at the same time 
 As a student takes notes, they are also able to write a question like this:
 
 <!-- IMAGE OF A QUESTION-ANSWER -->
+<p align="center">
+    <img src="misc/basic_fib_note.png" width=1200 />
+</p>
 
 This way, when the student is finished taking notes, they can instantly be quizzed on them.
 
@@ -61,6 +64,10 @@ blah blah
 <!-- built with React JS -->
 <!-- sidebar, header, notes, quiz -->
 <!-- concept-notes-question-answer setup -->
+
+<p align="center">
+    <img src="misc/latex_note.png" width=1200 />
+</p>
 
 
 <a name="looking-ahead"></a>
