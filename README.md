@@ -35,6 +35,22 @@ As a student takes notes, they are also able to write a question like this:
 
 This way, when the student is finished taking notes, they can instantly be quizzed on them.
 
+The quiz will present a question like this:
+<p align="center">
+    <img src="misc/de_morgan_question.png" width=350 />
+</p>
+
+The user will attempt to answer the question, then click the "show answer" button.
+That button will reveal the answer:
+
+<p align="center">
+    <img src="misc/de_morgan_answer.png" width=700 />
+</p>
+
+Finally, the user will record whether they were correct, incorrect, or skipping the question.
+This data is used to generate different types of quizzes, like questions that have been recently missed.
+After clicking one of the buttons, the next question is presented.
+
 ## [3. Design](#3-design)
 
 ### Languages/Frameworks
@@ -79,12 +95,25 @@ The raw LaTeX is displayed in the note itself, and a new section displaying the 
 </p>
 
 ### Quiz Structure
+There are 8 quiz types to choose from (seen below).
+The chosen quiz type dictates which questions are presented to the user, everything else remains the same.
+
+<p align="center">
+    <img src="misc/quiz_structure.png" width=650 />
+</p>
 
 
-### Example:
+### Notes Example:
 
 <p align="center">
     <img src="misc/whole_screen.png" width=1200 />
+</p>
+
+
+### Quiz Example:
+
+<p align="center">
+    <img src="misc/quiz_example.png" width=1200 />
 </p>
 
 ## [4. Phase 2](#4-phase-2)
@@ -103,3 +132,9 @@ That way, the users could take notes like usual, and as soon as they're done the
 Similarly, quizzes are currently created using a simple technique like choosing randomly, recently missed, never asked, etc.
 A more effective approach may be to create another AI to choose questions that would be most helpful to the users.
 For example, it could choose the top 10 questions that are most likely to improve the user's responses the next time they take a quiz.
+
+<hr>
+
+<p align="center">
+    <img src="misc/fire_guy.gif" height=200 />
+</p>
